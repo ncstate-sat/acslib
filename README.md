@@ -1,7 +1,7 @@
 # Access Control Systems Library
 
 
-<p align="center">
+<p align="left">
 <a href="https://pypi.python.org/pypi/acslib">
     <img src="https://img.shields.io/pypi/v/acslib.svg"
         alt = "Release Status">
@@ -22,7 +22,7 @@ A library for interacting with Access Control Systems like Genetec or Ccure9k
 
 
 * Free software: MIT
-* Documentation: <https://github.ncsu.edu/SAT/acslib/>
+* Documentation: <https://github.com/ncstate-sat/acslib>
 
 
 ## Features

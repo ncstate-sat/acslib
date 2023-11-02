@@ -1,12 +1,9 @@
 from abc import ABC, abstractmethod
 from numbers import Number
-from typing import Iterable
-
-from numbers import Number
-from typing import Any, Callable, Optional
+from typing import Iterable, Any, Callable, Optional
 
 import requests
-from fastapi import status
+from acslib.base import status
 from pydantic import BaseModel, Field
 
 
@@ -24,6 +21,7 @@ class RequestException(Exception):
     def __str__(self):
         return f"RequestException: {self.status_code} {self.message}"
 
+
 # TODO move?
 class RequestResponse:
     """Successful queries from handle_request return this type of object"""
@@ -35,27 +33,25 @@ class RequestResponse:
         self.json = json
         self.headers = headers
 
+
 class RequestData(BaseModel):
     """Kwargs used in requests get/post/etc methods"""
-
     url: str
     data: Optional[dict | str]
     headers: Optional[dict]
     request_json: Optional[dict] = Field(alias="json")
 
 
-class ACSConnection:
+class ACSConnection(ABC):
     """Base class for handling ACS connections"""
 
-    def __init__(self):
-        """."""
-        self.scheduled_jobs = {
-            "daily_jobs": [],
-            "hourly_jobs": [],
-            "minutely_jobs": [],
-        }
+    def __init__(self, **kwargs):
+        self.config = kwargs.get("config")
+        self.session_id = None
 
-
+    @abstractmethod
+    def connect(self):
+        pass
 
     def handle_request(
         self, requests_method: Callable, request_data: RequestData, timeout: Number = 1
@@ -143,18 +139,11 @@ class ACSConnection:
         raise RequestException(status_code=response.status_code, log_message=response.text)
 
 
-
 class AccessControlSystem(ABC):
     """
     Base class for access control systems
     Not all methods will be used in all implementations
     """
-
-    scheduled_jobs = {
-        "daily_jobs": [],
-        "hourly_jobs": [],
-        "minutely_jobs": [],
-    }
 
     # Abstract ACS methods
 

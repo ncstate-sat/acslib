@@ -1,13 +1,11 @@
-from dataclasses import dataclass
-import os
 from typing import Iterable, Callable
 import logging
 from numbers import Number
-
 from fastapi import status
 import requests
 
-from .acs_base import AccessControlSystem, ACSConnection, RequestException, RequestResponse, RequestData
+from acslib.base.connection import AccessControlSystem, ACSConnection, RequestException, RequestResponse, RequestData
+from acslib.ccure.config import CcureConfigFactory
 # from .constants import *
 # from .handle_requests import (
 #     RequestData,
@@ -16,79 +14,27 @@ from .acs_base import AccessControlSystem, ACSConnection, RequestException, Requ
 #     handle_request,
 # )
 
-
-class CcureConfigFactory:
-
-    @dataclass
-    class CcureConfig:
-
-        def __init__(self, api_version):
-            self.endpoints = CcureConfigFactory._get_endpoints(api_version)
-            # TODO is api_version different from CLIENT_VERSION?
-
-        USERNAME = os.getenv("CCURE_USERNAME")
-        PASSWORD = os.getenv("CCURE_PASSWORD")
-        BASE_URL = os.getenv("CCURE_BASE_URL")
-        CLIENT_NAME = os.getenv("CCURE_CLIENT_NAME")
-        CLIENT_VERSION = os.getenv("CCURE_CLIENT_VERSION")
-        CLIENT_ID = os.getenv("CCURE_CLIENT_ID")
-
-        PAGE_SIZE = 100
-        CLEARANCE_LIMIT = 40
-        TIMEOUT = 3  # seconds
-
-    @classmethod
-    def _get_endpoints(cls, api_version):
-        """."""
-        if api_version == 2:
-            return cls._get_v2_endpoints()
-        raise ValueError("Only version 2 of the Ccure api is currently supported.")
-
-    @staticmethod
-    def _get_v2_endpoints():
-        """."""
-
-        @dataclass
-        class Endpoints:
-            FIND_OBJS_W_CRITERIA = "/victorwebservice/api/Objects/FindObjsWithCriteriaFilter"
-            CLEARANCES_FOR_ASSIGNMENT = "/victorwebservice/api/v2/Personnel/ClearancesForAssignment"
-            GET_ALL_WITH_CRITERIA = "/victorwebservice/api/Objects/GetAllWithCriteria"
-            PERSIST_TO_CONTAINER = "/victorwebservice/api/Objects/PersistToContainer"
-            REMOVE_FROM_CONTAINER = "/victorwebservice/api/Objects/RemoveFromContainer"
-            LOGIN = "/victorwebservice/api/Authenticate/Login"
-            LOGOUT = "/victorwebservice/api/Authenticate/Logout"
-            KEEPALIVE = "/victorwebservice/api/v2/session/keepalive"
-            VERSIONS = "/victorwebservice/api/Generic/Versions"
-            DISABLE = "/victorwebservice/api/v2/objects/SetProperty"
-
-        return Endpoints
+logging = logging.getLogger(__name__)
 
 
 class CcureConnection(ACSConnection):
     """."""
-    def __init__(self, logger):
+    def __init__(self, **kwargs):
         """."""
-        super().__init__()
-        self.logger = logger
-        self.config = CcureConfigFactory.CcureConfig(api_version=2)
+        super().__init__(config=CcureConfigFactory())
+        if logger := kwargs.get("logger"):
+            self.logger = logger
+        self.config = CcureConfigFactory()
         self.session_id = None
-        self.scheduled_jobs["minutely_jobs"].append(self.keepalive)
 
     def login(self):
         """."""
-        connection_data = {
-                "UserName": self.config.USERNAME,
-                "Password": self.config.PASSWORD,
-                "ClientName": self.config.CLIENT_NAME,
-                "ClientVersion": self.config.CLIENT_VERSION,
-                "ClientID": self.config.CLIENT_ID,
-            }
         try:
             response = self.handle_request(
                 requests.post,
                 request_data=RequestData(
                     url=self.config.BASE_URL + self.config.endpoints.LOGIN,
-                    data=connection_data,
+                    data=self.config.connection_data,
                 ),
             )
             self.session_id = response.headers["session-id"]
@@ -96,7 +42,7 @@ class CcureConnection(ACSConnection):
         except RequestException as e:
             self.logger.error(f"Error Fetching Session ID: {e}")
             self.log_session_details()
-            self.logger.debug(f"Connection data: {connection_data}")
+            self.logger.debug(f"Connection data: {self.config.connection_data}")
             raise e
         return self.session_id
 
@@ -199,12 +145,8 @@ class CcureConnection(ACSConnection):
 class CcureACS(AccessControlSystem):
     """."""
 
-    def __init__(self, logger=None, *args, **kwargs):
+    def __init__(self, connection: CcureConnection = None):
         """."""
-        if logger:
-            self.logger = logger
-        else:
-            self.logger = logging.Logger(name="CcureACS")
         self.connection = CcureConnection(self.logger)
 
     def search_clearances(self, request_data: dict) -> list:
