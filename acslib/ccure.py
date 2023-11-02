@@ -7,24 +7,20 @@ from numbers import Number
 from fastapi import status
 import requests
 
-from .acs_base import AccessControlSystem, ACSConnection, RequestException, RequestResponse, RequestData
-# from .constants import *
-# from .handle_requests import (
-#     RequestData,
-#     RequestException,
-#     RequestResponse,
-#     handle_request,
-# )
+# from .acs_base import AccessControlSystem, ACSConnection, RequestException, RequestResponse, RequestData
+
+from .handle_requests import (
+    RequestData,
+    RequestException,
+    RequestResponse,
+    make_request,
+)
 
 
 class CcureConfigFactory:
 
     @dataclass
     class CcureConfig:
-
-        def __init__(self, api_version):
-            self.endpoints = CcureConfigFactory._get_endpoints(api_version)
-            # TODO is api_version different from CLIENT_VERSION?
 
         USERNAME = os.getenv("CCURE_USERNAME")
         PASSWORD = os.getenv("CCURE_PASSWORD")
@@ -36,6 +32,11 @@ class CcureConfigFactory:
         PAGE_SIZE = 100
         CLEARANCE_LIMIT = 40
         TIMEOUT = 3  # seconds
+
+        def __init__(self, api_version):
+            self.endpoints = CcureConfigFactory._get_endpoints(api_version)
+            # TODO is api_version different from CLIENT_VERSION?
+
 
     @classmethod
     def _get_endpoints(cls, api_version):
@@ -173,7 +174,7 @@ class CcureConnection(ACSConnection):
             timeout = self.config.TIMEOUT
         while request_attempts > 0:
             try:
-                return super().handle_request(requests_method, request_data, timeout)
+                return make_request(requests_method, request_data, timeout)
             except RequestException as e:
                 if e.status_code != status.HTTP_401_UNAUTHORIZED or request_attempts == 1:
                     raise e
