@@ -150,6 +150,8 @@ class CcureACS(AccessControlSystem):
 
     def __init__(self, connection: CcureConnection = None):
         """."""
+        breakpoint()
+        super().__init__()
         self.connection = connection
         if not self.connection:
             self.connection = CcureConnection()

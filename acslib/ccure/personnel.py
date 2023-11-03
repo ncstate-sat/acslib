@@ -1,4 +1,4 @@
-from ccure import CcureACS
+from acslib.ccure.ccure import CcureACS
 
 
 class Personnel(CcureACS):
