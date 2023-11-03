@@ -27,7 +27,7 @@ class CcureConnection(ACSConnection):
             self.logger = con_logger
         else:
             self.logger = logger
-        self.config = CcureConfigFactory(**kwargs)
+        self.config = kwargs.get("config", CcureConfigFactory())
 
     def login(self):
         """."""
@@ -149,7 +149,7 @@ class CcureACS(AccessControlSystem):
 
     def __init__(self, connection: CcureConnection = None):
         """."""
-        self.connection = CcureConnection(self.logger)
+        self.connection = CcureConnection(connection=connection)
 
     def search_clearances(self, request_data: dict) -> list:
         """Method for searching clearances"""
