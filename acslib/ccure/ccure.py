@@ -4,42 +4,44 @@ from numbers import Number
 from fastapi import status
 import requests
 
-from acslib.base.connection import AccessControlSystem, ACSConnection, RequestException, RequestResponse, RequestData
+from acslib.base import (
+    AccessControlSystem,
+    ACSConnection,
+    ACSRequestException,
+    ACSRequestResponse,
+    ACSRequestData,
+)
 from acslib.ccure.config import CcureConfigFactory
-# from .constants import *
-# from .handle_requests import (
-#     RequestData,
-#     RequestException,
-#     RequestResponse,
-#     handle_request,
-# )
 
-logging = logging.getLogger(__name__)
+
+logger = logging.getLogger(__name__)
 
 
 class CcureConnection(ACSConnection):
     """."""
+
     def __init__(self, **kwargs):
         """."""
-        super().__init__(config=CcureConfigFactory())
-        if logger := kwargs.get("logger"):
+        super().__init__(**kwargs)
+        if con_logger := kwargs.get("logger"):
+            self.logger = con_logger
+        else:
             self.logger = logger
-        self.config = CcureConfigFactory()
-        self.session_id = None
+        self.config = CcureConfigFactory(**kwargs)
 
     def login(self):
         """."""
         try:
             response = self.handle_request(
                 requests.post,
-                request_data=RequestData(
-                    url=self.config.BASE_URL + self.config.endpoints.LOGIN,
+                request_data=ACSRequestData(
+                    url=self.config.base_url + self.config.endpoints.LOGIN,
                     data=self.config.connection_data,
                 ),
             )
             self.session_id = response.headers["session-id"]
             self.logger.debug(f"Fetched new Session ID: {self.session_id}")
-        except RequestException as e:
+        except ACSRequestException as e:
             self.logger.error(f"Error Fetching Session ID: {e}")
             self.log_session_details()
             self.logger.debug(f"Connection data: {self.config.connection_data}")
@@ -53,12 +55,12 @@ class CcureConnection(ACSConnection):
             try:
                 self.handle_request(
                     requests.post,
-                    request_data=RequestData(
+                    request_data=ACSRequestData(
                         url=self.config.BASE_URL + self.config.endpoints.LOGOUT,
                         headers={"session-id": self.session_id},
                     ),
                 )
-            except RequestException as e:
+            except ACSRequestException as e:
                 self.logger.error(f"Error logging out of CCure session: {e}")
                 self.log_session_details()
             finally:
@@ -81,7 +83,7 @@ class CcureConnection(ACSConnection):
         try:
             self.handle_request(
                 requests.post,
-                request_data=RequestData(
+                request_data=ACSRequestData(
                     url=self.config.BASE_URL + self.config.endpoints.KEEPALIVE,
                     headers={
                         "session-id": self.get_session_id(),
@@ -90,7 +92,7 @@ class CcureConnection(ACSConnection):
                 ),
             )
             self.logger.debug(f"Session kept alive: {self.session_id}")
-        except RequestException as e:
+        except ACSRequestException as e:
             self.logger.error(f"Error keeping CCure session alive: {e}")
             self.log_session_details()
             self.logout()
@@ -98,7 +100,7 @@ class CcureConnection(ACSConnection):
     def handle_request(
         self,
         requests_method: Callable,
-        request_data: RequestData,
+        request_data: ACSRequestData,
         timeout: Number = 0,
         request_attempts: int = 2,
     ) -> RequestResponse:
@@ -120,7 +122,7 @@ class CcureConnection(ACSConnection):
         while request_attempts > 0:
             try:
                 return super().handle_request(requests_method, request_data, timeout)
-            except RequestException as e:
+            except ACSRequestException as e:
                 if e.status_code != status.HTTP_401_UNAUTHORIZED or request_attempts == 1:
                     raise e
                 request_attempts -= 1
@@ -134,11 +136,11 @@ class CcureConnection(ACSConnection):
         try:
             response = self.handle_request(
                 requests.post,
-                request_data=RequestData(url=version_url),
+                request_data=ACSRequestData(url=version_url),
             ).json
             self.logger.debug(f"CCure webservice version: {response.get('webServiceVersion')}")
             self.logger.debug(f"CCure app server version: {response.get('appServerVersion')}")
-        except RequestException as e:
+        except ACSRequestException as e:
             self.logger.debug(f"Could not get CCure api version number: {e}")
 
 
@@ -153,7 +155,7 @@ class CcureACS(AccessControlSystem):
         """Method for searching clearances"""
 
     def get_clearances_count(self) -> int:
-        """"Method for getting a count of all clearances in the system"""
+        """ "Method for getting a count of all clearances in the system"""
 
     def get_assigned_clearances(self, assignee_id) -> list:
         """Method to get clearances assigned to a person"""

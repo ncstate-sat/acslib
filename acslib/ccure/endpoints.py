@@ -13,5 +13,3 @@ class V2Endpoints:
     KEEPALIVE = "/victorwebservice/api/v2/session/keepalive"
     VERSIONS = "/victorwebservice/api/Generic/Versions"
     DISABLE = "/victorwebservice/api/v2/objects/SetProperty"
-
-
