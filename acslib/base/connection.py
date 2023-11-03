@@ -1,3 +1,4 @@
+import json
 from abc import ABC, abstractmethod
 from typing import Iterable, Any, Callable, Optional
 
@@ -39,9 +40,9 @@ class ACSRequestData(BaseModel):
     """Kwargs used in requests get/post/etc methods"""
 
     url: str
-    data: Optional[dict | str]
-    headers: Optional[dict]
-    request_json: Optional[dict] = Field(alias="json")
+    data: Optional[dict | str] = {}
+    headers: Optional[dict] = {}
+    request_json: Optional[dict] = Field(alias="json", default=json.loads("{}"))
 
 
 class ACSConnection(ABC):
@@ -105,14 +106,14 @@ class ACSConnection(ABC):
             # Requests that produced this error are safe to retry.
             raise ACSRequestException(
                 status_code=status.HTTP_408_REQUEST_TIMEOUT,
-                log_message=f"Unable to connect to remote server in {timeout} second(s)",
+                log_message=f"Unable to connect to remote server in {self.timeout} second(s)",
             )
 
         except requests.ReadTimeout:
             # The server did not send any data in the allotted amount of time.
             raise ACSRequestException(
                 status_code=status.HTTP_408_REQUEST_TIMEOUT,
-                log_message=f"No response from remote server in {timeout} second(s)",
+                log_message=f"No response from remote server in {self.timeout} second(s)",
             )
 
         except requests.Timeout:
@@ -120,7 +121,7 @@ class ACSConnection(ABC):
             # Watching this error will catch both ConnectTimeout and ReadTimeout errors.
             raise ACSRequestException(
                 status_code=status.HTTP_408_REQUEST_TIMEOUT,
-                log_message=f"Request took longer than {timeout} second(s)",
+                log_message=f"Request took longer than {self.timeout} second(s)",
             )
 
         except requests.ConnectionError:

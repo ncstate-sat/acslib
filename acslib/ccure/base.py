@@ -1,7 +1,7 @@
 from typing import Iterable, Callable
 import logging
 from numbers import Number
-from fastapi import status
+from acslib.base import status
 import requests
 
 from acslib.base import (
@@ -119,10 +119,10 @@ class CcureConnection(ACSConnection):
         """
         # use TIMEOUT as the default timeout value
         if timeout == 0:
-            timeout = self.config.TIMEOUT
+            timeout = self.config.timeout
         while request_attempts > 0:
             try:
-                return super().handle_request(requests_method, request_data, timeout)
+                return super().handle_request(requests_method, request_data)
             except ACSRequestException as e:
                 if e.status_code != status.HTTP_401_UNAUTHORIZED or request_attempts == 1:
                     raise e
@@ -150,7 +150,6 @@ class CcureACS(AccessControlSystem):
 
     def __init__(self, connection: CcureConnection = None):
         """."""
-        breakpoint()
         super().__init__()
         self.connection = connection
         if not self.connection:
