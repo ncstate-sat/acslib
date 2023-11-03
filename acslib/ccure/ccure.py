@@ -10,6 +10,7 @@ from acslib.base import (
     ACSRequestException,
     ACSRequestResponse,
     ACSRequestData,
+    ACSSearchResult,
 )
 from acslib.ccure.config import CcureConfigFactory
 
@@ -103,7 +104,7 @@ class CcureConnection(ACSConnection):
         request_data: ACSRequestData,
         timeout: Number = 0,
         request_attempts: int = 2,
-    ) -> RequestResponse:
+    ) -> ACSRequestResponse:
         """
         Call the `ACSConnection.handle_requests` function and return the result.
         If the response is a 401, get a new CCure session_id and try the request again.
@@ -149,41 +150,58 @@ class CcureACS(AccessControlSystem):
 
     def __init__(self, connection: CcureConnection = None):
         """."""
-        self.connection = CcureConnection(connection=connection)
+        self.connection = connection
+        if not self.connection:
+            self.connection = CcureConnection()
 
-    def search_clearances(self, request_data: dict) -> list:
-        """Method for searching clearances"""
+    def search(self, *args, **kwargs) -> ACSSearchResult:
+        pass
 
-    def get_clearances_count(self) -> int:
-        """ "Method for getting a count of all clearances in the system"""
+    def get_count(self, *args, **kwargs) -> int:
+        pass
 
-    def get_assigned_clearances(self, assignee_id) -> list:
-        """Method to get clearances assigned to a person"""
+    def get_by_id(self, *args, **kwargs) -> ACSSearchResult:
+        pass
 
-    def get_clearance_by_id(self, clearance_id) -> dict:
-        """Method to get one clearance"""
+    def get_by_ids(self, *args, **kwargs) -> ACSSearchResult:
+        pass
 
-    def get_clearances_by_id(self, clearance_ids: list) -> list[dict]:
-        """Method to get multiple clearanaces"""
+    def update(self, *args, **kwargs) -> ACSSearchResult:
+        pass
 
-    def get_clearance_name(self, clearance_id) -> str:
-        """Method to get a clearance's name"""
-
-    def get_clearance_names(self, clearance_id: Iterable) -> str:
-        """Method to get clearances' names"""
-
-    # def assign_clearances(cls, configs: list[dict]):
-    #     """Method to assign one or more clearances to one or more people"""
-
-    # def revoke_clearances(cls, configs: list[dict]):
-    #     """Method to revoke one or more clearances to one or more people"""
-
-    # def disable_person(cls, person_id):
-    #     """Method to set a disable flag on a person's record"""
-
-    # def add_person(cls, property_names, property_values):
-    #     """Method to add a person to the database"""
-    #     # TODO refactor. Args should be one dict, not two parallel lists
-
-    def get_clearance_assignees(self, clearance_ids, *args, **kwargs):
-        """Method to get lists of people assigned to the given clearances"""
+    # def search_clearances(self, request_data: dict) -> list:
+    #     """Method for searching clearances"""
+    #
+    # def get_clearances_count(self) -> int:
+    #     """ "Method for getting a count of all clearances in the system"""
+    #
+    # def get_assigned_clearances(self, assignee_id) -> list:
+    #     """Method to get clearances assigned to a person"""
+    #
+    # def get_clearance_by_id(self, clearance_id) -> dict:
+    #     """Method to get one clearance"""
+    #
+    # def get_clearances_by_id(self, clearance_ids: list) -> list[dict]:
+    #     """Method to get multiple clearanaces"""
+    #
+    # def get_clearance_name(self, clearance_id) -> str:
+    #     """Method to get a clearance's name"""
+    #
+    # def get_clearance_names(self, clearance_id: Iterable) -> str:
+    #     """Method to get clearances' names"""
+    #
+    # # def assign_clearances(cls, configs: list[dict]):
+    # #     """Method to assign one or more clearances to one or more people"""
+    #
+    # # def revoke_clearances(cls, configs: list[dict]):
+    # #     """Method to revoke one or more clearances to one or more people"""
+    #
+    # # def disable_person(cls, person_id):
+    # #     """Method to set a disable flag on a person's record"""
+    #
+    # # def add_person(cls, property_names, property_values):
+    # #     """Method to add a person to the database"""
+    # #     # TODO refactor. Args should be one dict, not two parallel lists
+    #
+    # def get_clearance_assignees(self, clearance_ids, *args, **kwargs):
+    #     """Method to get lists of people assigned to the given clearances"""

@@ -64,6 +64,7 @@ class CcureConfigFactory:
     def __new__(cls, *args, **kwargs) -> CcureConfig:
         """
             CcuureConfigFactory returns a CcureConfig instance with the correct endpoints for the requested API version.
+            The default api version is 2.
             :param args:
             :param kwargs:
             :return: CcureConfig

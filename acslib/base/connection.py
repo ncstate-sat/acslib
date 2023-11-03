@@ -157,58 +157,78 @@ class AccessControlSystem(ABC):
     # Abstract ACS methods
 
     @abstractmethod
-    def search_clearances(self, request_data: dict) -> list:
-        """Base method for searching clearances"""
+    def search(self, *args, **kwargs):
+        """Base method for searching"""
 
     @abstractmethod
-    def get_clearances_count(self) -> int:
-        """ "Base method for getting a count of all clearances in the system"""
+    def get_count(self, *args, **kwargs):
+        """Base method for getting a count of all records in the system"""
 
     @abstractmethod
-    def get_assigned_clearances(self, assignee_id) -> list:
-        """Base method to get clearances assigned to a person"""
+    def get_by_id(self, *args, **kwargs):
+        """Base method for getting one record"""
 
     @abstractmethod
-    def get_clearance_by_id(self, clearance_id) -> dict:
-        """Base method to get one clearance"""
-        # TODO fold this into search_clearances?
+    def get_by_ids(self, *args, **kwargs):
+        """Base method for getting multiple records"""
 
     @abstractmethod
-    def get_clearances_by_id(self, clearance_ids: list) -> list[dict]:
-        """Base method to get multiple clearanaces"""
-        # TODO fold this into search_clearances?
-
-    @abstractmethod
-    def get_clearance_name(self, clearance_id) -> str:
-        """Base method to get a clearance's name"""
-        # TODO fold this into search_clearances?
-
-    @abstractmethod
-    def get_clearance_names(self, clearance_id: Iterable) -> str:
-        """Base method to get clearances' names"""
-        # TODO fold this into search_clearances?
+    def update(self, *args, **kwargs):
+        """Base method for updating a record"""
 
     # @abstractmethod
-    # @classmethod
-    # def assign_clearances(cls, configs: list[dict]):
-    #     """Base method to assign one or more clearances to one or more people"""
-
+    # def search_clearances(self, request_data: dict) -> list:
+    #     """Base method for searching clearances"""
+    #
     # @abstractmethod
-    # @classmethod
-    # def revoke_clearances(cls, configs: list[dict]):
-    #     """Base method to revoke one or more clearances to one or more people"""
-
+    # def get_clearances_count(self) -> int:
+    #     """ "Base method for getting a count of all clearances in the system"""
+    #
     # @abstractmethod
-    # @classmethod
-    # def disable_person(cls, person_id):
-    #     """Base method to set a disable flag on a person's record"""
-
+    # def get_assigned_clearances(self, assignee_id) -> list:
+    #     """Base method to get clearances assigned to a person"""
+    #
     # @abstractmethod
-    # @classmethod
-    # def add_person(cls, property_names, property_values):
-    #     """Base method to add a person to the database"""
-    #     # TODO refactor. Args should be one dict, not two parallel lists
-
-    @abstractmethod
-    def get_clearance_assignees(self, clearance_ids, *args, **kwargs):
-        """Base method to get lists of people assigned to the given clearances"""
+    # def get_clearance_by_id(self, clearance_id) -> dict:
+    #     """Base method to get one clearance"""
+    #     # TODO fold this into search_clearances?
+    #
+    # @abstractmethod
+    # def get_clearances_by_id(self, clearance_ids: list) -> list[dict]:
+    #     """Base method to get multiple clearanaces"""
+    #     # TODO fold this into search_clearances?
+    #
+    # @abstractmethod
+    # def get_clearance_name(self, clearance_id) -> str:
+    #     """Base method to get a clearance's name"""
+    #     # TODO fold this into search_clearances?
+    #
+    # @abstractmethod
+    # def get_clearance_names(self, clearance_id: Iterable) -> str:
+    #     """Base method to get clearances' names"""
+    #     # TODO fold this into search_clearances?
+    #
+    # # @abstractmethod
+    # # @classmethod
+    # # def assign_clearances(cls, configs: list[dict]):
+    # #     """Base method to assign one or more clearances to one or more people"""
+    #
+    # # @abstractmethod
+    # # @classmethod
+    # # def revoke_clearances(cls, configs: list[dict]):
+    # #     """Base method to revoke one or more clearances to one or more people"""
+    #
+    # # @abstractmethod
+    # # @classmethod
+    # # def disable_person(cls, person_id):
+    # #     """Base method to set a disable flag on a person's record"""
+    #
+    # # @abstractmethod
+    # # @classmethod
+    # # def add_person(cls, property_names, property_values):
+    # #     """Base method to add a person to the database"""
+    # #     # TODO refactor. Args should be one dict, not two parallel lists
+    #
+    # @abstractmethod
+    # def get_clearance_assignees(self, clearance_ids, *args, **kwargs):
+    #     """Base method to get lists of people assigned to the given clearances"""

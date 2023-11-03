@@ -1,16 +1,17 @@
-from abc import ABC, abstractmethod
-from connection import ACSConnection
+from abc import ABC
 
 
-class ACSSearch(ABC):
-    """Base class for handling ACS searches"""
+class ACSSearchResult(ABC):
+    """Base class for encapsulating search results"""
 
-    def __init__(self, connection: ACSConnection, **kwargs):
-        self.connection = connection
-        self.logger = kwargs.get("logger")
-        self.session_id = None
+    def __init__(self):
         self.results = []
 
-    @abstractmethod
-    def search(self):
-        pass
+    def __iter__(self):
+        return iter(self.results)
+
+    def __len__(self):
+        return len(self.results)
+
+    def __getitem__(self, item: int):
+        return self.results[item]
