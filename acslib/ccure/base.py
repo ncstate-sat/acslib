@@ -11,8 +11,9 @@ from acslib.base import (
     ACSRequestResponse,
     ACSRequestData,
 )
+from acslib.base.search import ACSFilter
 from acslib.ccure.config import CcureConfigFactory
-from acslib.ccure.search import PersonnelFilter, PERSONNEL_LOOKUP_FIELDS, SearchTypes
+from acslib.ccure.search import PersonnelFilter, SearchTypes
 
 
 logger = logging.getLogger(__name__)
@@ -162,14 +163,15 @@ class CcureACS(AccessControlSystem):
         super().__init__(connection=connection)
         if not self.connection:
             self.connection = CcureConnection()
+        self.logger = self.connection.logger
 
-    def _search_people(self, fields, terms) -> ACSRequestResponse:
-        pf = PersonnelFilter(lookups=fields)
+    def _search_people(self, search_filter: PersonnelFilter, terms) -> ACSRequestResponse:
         request_json = {
             "TypeFullName": "Personnel",
+            "DisplayProperties": search_filter.display_properties,
             "pageSize": self.connection.config.page_size,
             "pageNumber": 1,
-            "WhereClause": pf.filter(terms),
+            "WhereClause": search_filter.filter(terms),
         }
 
         return self.connection.request(
@@ -181,56 +183,13 @@ class CcureACS(AccessControlSystem):
             ),
         )
 
-    def search(self, search_type: SearchTypes, terms: str, fields: list[tuple] = PERSONNEL_LOOKUP_FIELDS) -> ACSRequestResponse:
+    def search(self, search_type: SearchTypes, terms: list, search_filter: ACSFilter = None) -> ACSRequestResponse:
         match search_type:
             case search_type.PERSONNEL:
-                return self._search_people(fields, terms)
-
-    def get_count(self, *args, **kwargs) -> int:
-        pass
-
-    def get_by_id(self, *args, **kwargs):
-        pass
-
-    def get_by_ids(self, *args, **kwargs):
-        pass
-
-    def update(self, *args, **kwargs):
-        pass
-
-    # def search_clearances(self, request_data: dict) -> list:
-    #     """Method for searching clearances"""
-    #
-    # def get_clearances_count(self) -> int:
-    #     """ "Method for getting a count of all clearances in the system"""
-    #
-    # def get_assigned_clearances(self, assignee_id) -> list:
-    #     """Method to get clearances assigned to a person"""
-    #
-    # def get_clearance_by_id(self, clearance_id) -> dict:
-    #     """Method to get one clearance"""
-    #
-    # def get_clearances_by_id(self, clearance_ids: list) -> list[dict]:
-    #     """Method to get multiple clearanaces"""
-    #
-    # def get_clearance_name(self, clearance_id) -> str:
-    #     """Method to get a clearance's name"""
-    #
-    # def get_clearance_names(self, clearance_id: Iterable) -> str:
-    #     """Method to get clearances' names"""
-    #
-    # # def assign_clearances(cls, configs: list[dict]):
-    # #     """Method to assign one or more clearances to one or more people"""
-    #
-    # # def revoke_clearances(cls, configs: list[dict]):
-    # #     """Method to revoke one or more clearances to one or more people"""
-    #
-    # # def disable_person(cls, person_id):
-    # #     """Method to set a disable flag on a person's record"""
-    #
-    # # def add_person(cls, property_names, property_values):
-    # #     """Method to add a person to the database"""
-    # #     # TODO refactor. Args should be one dict, not two parallel lists
-    #
-    # def get_clearance_assignees(self, clearance_ids, *args, **kwargs):
-    #     """Method to get lists of people assigned to the given clearances"""
+                self.logger.info("Searching for personnel")
+                if search_filter:
+                    return self._search_people(search_filter, terms)
+                else:
+                    return self._search_people(PersonnelFilter(), terms)
+            case _:
+                raise ValueError(f"Invalid search type: {search_type}")

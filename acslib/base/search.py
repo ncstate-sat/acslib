@@ -1,9 +1,18 @@
+from enum import Enum
 from abc import ABC, abstractmethod
 
 
-class Filter(ABC):
-    def __init__(self, lookups: list[tuple]):
-        self.filter_fields = lookups
+class BooleanOperators(Enum):
+    AND = "AND"
+    OR = "OR"
+
+
+class TermOperators(Enum):
+    EQUALS = "="
+    FUZZY = "LIKE"
+
+
+class ACSFilter(ABC):
 
     @abstractmethod
     def filter(self, search):
