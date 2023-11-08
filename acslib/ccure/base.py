@@ -173,6 +173,8 @@ class CcureACS(AccessControlSystem):
             "pageNumber": 1,
             "WhereClause": search_filter.filter(terms),
         }
+        if not search_filter.display_properties:
+            del request_json["DisplayProperties"]
 
         return self.connection.request(
             requests.post,
@@ -189,7 +191,6 @@ class CcureACS(AccessControlSystem):
                 self.logger.info("Searching for personnel")
                 if search_filter:
                     return self._search_people(search_filter, terms)
-                else:
-                    return self._search_people(PersonnelFilter(), terms)
+                return self._search_people(PersonnelFilter(), terms)
             case _:
                 raise ValueError(f"Invalid search type: {search_type}")

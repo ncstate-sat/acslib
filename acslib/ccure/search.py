@@ -48,7 +48,7 @@ class PersonnelFilter(ACSFilter):
         self.outer_bool = outer_bool.value
         self.inner_bool = inner_bool.value
         self.term_operator = term_operator.value
-        self.display_properties = ["FirstName", "MiddleName", "LastName", "Text1", "Text14"]
+        self.display_properties = ["FirstName", "MiddleName", "LastName"]
 
     def _compile_term(self, term: str) -> str:
         accumulator = ""
@@ -59,6 +59,9 @@ class PersonnelFilter(ACSFilter):
                 accumulator += f"{self.inner_bool} {lookup[0]} {self.term_operator} '{lookup[1](term)}' "
         accumulator = accumulator.rstrip() + ")"
         return accumulator
+
+    def update_display_properties(self, properties: list[str]):
+        self.display_properties += properties
 
     def filter(self, search: list[str]) -> str:
         search_filter = ""
