@@ -10,9 +10,9 @@ from acslib.base import (
     ACSRequestException,
     ACSRequestResponse,
     ACSRequestData,
-    ACSSearchResult,
 )
 from acslib.ccure.config import CcureConfigFactory
+from acslib.ccure.search import PersonnelFilter, PERSONNEL_LOOKUP_FIELDS, SearchTypes
 
 
 logger = logging.getLogger(__name__)
@@ -24,16 +24,25 @@ class CcureConnection(ACSConnection):
     def __init__(self, **kwargs):
         """."""
         super().__init__(**kwargs)
+        self.session_id = None
         if con_logger := kwargs.get("logger"):
             self.logger = con_logger
         else:
             self.logger = logger
         self.config = kwargs.get("config", CcureConfigFactory())
 
+    @property
+    def headers(self):
+        """."""
+        return {
+            "session-id": self.get_session_id(),
+            "Access-Control-Expose-Headers": "session-id",
+        }
+
     def login(self):
         """."""
         try:
-            response = self.handle_request(
+            response = self.request(
                 requests.post,
                 request_data=ACSRequestData(
                     url=self.config.base_url + self.config.endpoints.LOGIN,
@@ -54,7 +63,7 @@ class CcureConnection(ACSConnection):
         if self.session_id:
             self.logger.debug(f"Logging out of CCure session: {self.session_id}")
             try:
-                self.handle_request(
+                self.request(
                     requests.post,
                     request_data=ACSRequestData(
                         url=self.config.BASE_URL + self.config.endpoints.LOGOUT,
@@ -82,7 +91,7 @@ class CcureConnection(ACSConnection):
         """
         self.logger.debug(f"Keeeping CCure session alive: {self.session_id}")
         try:
-            self.handle_request(
+            self.request(
                 requests.post,
                 request_data=ACSRequestData(
                     url=self.config.BASE_URL + self.config.endpoints.KEEPALIVE,
@@ -98,7 +107,7 @@ class CcureConnection(ACSConnection):
             self.log_session_details()
             self.logout()
 
-    def handle_request(
+    def request(
         self,
         requests_method: Callable,
         request_data: ACSRequestData,
@@ -118,11 +127,11 @@ class CcureConnection(ACSConnection):
         Returns: An object with status_code, json, and headers attributes
         """
         # use TIMEOUT as the default timeout value
-        if timeout == 0:
-            timeout = self.config.timeout
+        if timeout != 0:
+            self.config.timeout = timeout
         while request_attempts > 0:
             try:
-                return super().handle_request(requests_method, request_data)
+                return super().request(requests_method, request_data)
             except ACSRequestException as e:
                 if e.status_code != status.HTTP_401_UNAUTHORIZED or request_attempts == 1:
                     raise e
@@ -135,7 +144,7 @@ class CcureConnection(ACSConnection):
         version_url = self.config.BASE_URL + self.config.endpoints.VERSIONS
         self.logger.error(f"Session ID: {self.session_id}")
         try:
-            response = self.handle_request(
+            response = self.request(
                 requests.post,
                 request_data=ACSRequestData(url=version_url),
             ).json
@@ -150,24 +159,43 @@ class CcureACS(AccessControlSystem):
 
     def __init__(self, connection: CcureConnection = None):
         """."""
-        super().__init__()
-        self.connection = connection
+        super().__init__(connection=connection)
         if not self.connection:
             self.connection = CcureConnection()
 
-    def search(self, *args, **kwargs) -> ACSSearchResult:
-        pass
+    def _search_people(self, fields, terms) -> ACSRequestResponse:
+        pf = PersonnelFilter(lookups=fields)
+        request_json = {
+            "TypeFullName": "Personnel",
+            "pageSize": self.connection.config.page_size,
+            "pageNumber": 1,
+            "WhereClause": pf.filter(terms),
+        }
+
+        return self.connection.request(
+            requests.post,
+            request_data=ACSRequestData(
+                url=self.connection.config.base_url + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
+                json=request_json,
+                headers=self.connection.headers,
+            ),
+        )
+
+    def search(self, search_type: SearchTypes, terms: str, fields: list[tuple] = PERSONNEL_LOOKUP_FIELDS) -> ACSRequestResponse:
+        match search_type:
+            case search_type.PERSONNEL:
+                return self._search_people(fields, terms)
 
     def get_count(self, *args, **kwargs) -> int:
         pass
 
-    def get_by_id(self, *args, **kwargs) -> ACSSearchResult:
+    def get_by_id(self, *args, **kwargs):
         pass
 
-    def get_by_ids(self, *args, **kwargs) -> ACSSearchResult:
+    def get_by_ids(self, *args, **kwargs):
         pass
 
-    def update(self, *args, **kwargs) -> ACSSearchResult:
+    def update(self, *args, **kwargs):
         pass
 
     # def search_clearances(self, request_data: dict) -> list:

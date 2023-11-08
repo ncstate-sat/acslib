@@ -1,17 +1,14 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
-class ACSSearchResult(ABC):
-    """Base class for encapsulating search results"""
+class Filter(ABC):
+    def __init__(self, lookups: list[tuple]):
+        self.filter_fields = lookups
 
-    def __init__(self):
-        self.results = []
+    @abstractmethod
+    def filter(self, search):
+        pass
 
-    def __iter__(self):
-        return iter(self.results)
 
-    def __len__(self):
-        return len(self.results)
 
-    def __getitem__(self, item: int):
-        return self.results[item]
+

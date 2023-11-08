@@ -1,1 +1,1 @@
-from acslib.ccure.personnel import Personnel
+from acslib.ccure.base import CcureACS as Ccure

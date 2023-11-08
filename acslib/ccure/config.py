@@ -71,8 +71,9 @@ class CcureConfigFactory:
         """
         api_version = kwargs.get("api_version", 2)
         instance = CcureConfig(**kwargs)
-        if api_version == 2:
-            instance.endpoints = V2Endpoints
-        else:
-            raise ACSConfigException(f"Invalid API version: {api_version}")
+        match api_version:
+            case 2:
+                instance.endpoints = V2Endpoints
+            case _:
+                raise ACSConfigException(f"Invalid API version: {api_version}")
         return instance
