@@ -35,6 +35,9 @@ class ACSRequestResponse:
         self.json = json
         self.headers = headers
 
+    def count(self):
+        return len(self.json)
+
 
 class ACSRequestData(BaseModel):
     """Kwargs used in requests get/post/etc methods"""
@@ -78,7 +81,7 @@ class ACSConnection(ABC):
         Returns: An object with status_code, json, and headers attributes
         """
         try:
-            request_data_map = request_data.__dict__
+            request_data_map = request_data.model_dump()
             request_data_map["json"] = request_data_map.pop("request_json")
             response = requests_method(**request_data_map, timeout=self.timeout)
         except requests.HTTPError:

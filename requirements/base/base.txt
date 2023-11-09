@@ -4,3 +4,13 @@
 #
 #    pip-compile --output-file=requirements/base/base.txt pyproject.toml
 #
+annotated-types==0.6.0
+    # via pydantic
+pydantic==2.4.2
+    # via acslib (pyproject.toml)
+pydantic-core==2.10.1
+    # via pydantic
+typing-extensions==4.8.0
+    # via
+    #   pydantic
+    #   pydantic-core

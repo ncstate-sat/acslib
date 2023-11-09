@@ -4,6 +4,8 @@
 #
 #    pip-compile --extra=dev --output-file=requirements/dev/dev.txt pyproject.toml
 #
+annotated-types==0.6.0
+    # via pydantic
 attrs==23.1.0
     # via pytest
 babel==2.13.1
@@ -129,6 +131,10 @@ pre-commit==2.21.0
     # via acslib (pyproject.toml)
 py==1.11.0
     # via pytest
+pydantic==2.4.2
+    # via acslib (pyproject.toml)
+pydantic-core==2.10.1
+    # via pydantic
 pygments==2.16.1
     # via
     #   acslib (pyproject.toml)
@@ -186,7 +192,10 @@ tomli==2.0.1
 tomli-w==1.0.0
     # via flit
 typing-extensions==4.8.0
-    # via black
+    # via
+    #   black
+    #   pydantic
+    #   pydantic-core
 urllib3==2.0.7
     # via requests
 virtualenv==20.24.6
