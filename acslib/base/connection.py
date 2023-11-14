@@ -1,6 +1,7 @@
 import json
 from abc import ABC, abstractmethod
-from typing import Iterable, Any, Callable, Optional
+from enum import Enum
+from typing import Any, Optional
 
 import requests
 from acslib.base import status
@@ -23,6 +24,14 @@ class ACSRequestException(Exception):
 
     def __str__(self):
         return f"RequestException: {self.status_code} {self.message}"
+
+
+class ACSRequestMethod(Enum):
+    GET = "get"
+    POST = "post"
+    PUT = "put"
+    DELETE = "delete"
+    PATCH = "patch"
 
 
 class ACSRequestResponse:
@@ -52,21 +61,37 @@ class ACSConnection(ABC):
 
     def __init__(self, **kwargs):
         self.config = kwargs.get("config")
+        if not self.config:
+            raise ACSConnectionException("No config provided")
         self.timeout = kwargs.get("timeout", 1)
         self.response = None
 
     @abstractmethod
     def login(self):
-        if not self.config:
-            raise ACSConnectionException("No config provided")
         pass
 
     @abstractmethod
     def logout(self):
         pass
 
+    def _make_request(self, requests_method: ACSRequestMethod, request_data_map: dict):
+        match requests_method:
+            case ACSRequestMethod.GET:
+                req = requests.get
+            case ACSRequestMethod.POST:
+                req = requests.post
+            case ACSRequestMethod.PUT:
+                req = requests.put
+            case ACSRequestMethod.DELETE:
+                req = requests.delete
+            case ACSRequestMethod.PATCH:
+                req = requests.patch
+            case _:
+                raise ACSRequestException("Invalid request method")
+        return req(**request_data_map, timeout=self.timeout)
+
     def request(
-        self, requests_method: Callable, request_data: ACSRequestData
+        self, requests_method: ACSRequestMethod, request_data: ACSRequestData
     ) -> ACSRequestResponse:
         """
         Process requests to remote servers.
@@ -80,30 +105,28 @@ class ACSConnection(ABC):
 
         Returns: An object with status_code, json, and headers attributes
         """
+
         try:
             request_data_map = request_data.model_dump()
             request_data_map["json"] = request_data_map.pop("request_json")
-            response = requests_method(**request_data_map, timeout=self.timeout)
+            response = self._make_request(requests_method, request_data_map)
         except requests.HTTPError:
             # An HTTP error occurred.
             raise ACSRequestException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 log_message="An error occurred with this request",
             )
-
         except requests.URLRequired:
             # A valid URL is required to make a request.
             raise ACSRequestException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                 log_message="A valid URL wasn't provided for this request",
             )
-
         except requests.TooManyRedirects:
             # Too many redirects.
             raise ACSRequestException(
                 status_code=status.HTTP_421_MISDIRECTED_REQUEST, log_message="Too many redirects"
             )
-
         except requests.ConnectTimeout:
             # The request timed out while trying to connect to the remote server.
             # Requests that produced this error are safe to retry.
@@ -111,14 +134,12 @@ class ACSConnection(ABC):
                 status_code=status.HTTP_408_REQUEST_TIMEOUT,
                 log_message=f"Unable to connect to remote server in {self.timeout} second(s)",
             )
-
         except requests.ReadTimeout:
             # The server did not send any data in the allotted amount of time.
             raise ACSRequestException(
                 status_code=status.HTTP_408_REQUEST_TIMEOUT,
                 log_message=f"No response from remote server in {self.timeout} second(s)",
             )
-
         except requests.Timeout:
             # The request timed out.
             # Watching this error will catch both ConnectTimeout and ReadTimeout errors.
@@ -126,14 +147,12 @@ class ACSConnection(ABC):
                 status_code=status.HTTP_408_REQUEST_TIMEOUT,
                 log_message=f"Request took longer than {self.timeout} second(s)",
             )
-
         except requests.ConnectionError:
             # A Connection error occurred.
             raise ACSRequestException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 log_message="Could not connect to the remote host",
             )
-
         except requests.RequestException:
             # There was an ambiguous exception that occurred while handling your request.
             raise ACSRequestException(

@@ -1,0 +1,63 @@
+import random
+from dataclasses import dataclass, field
+import pytest
+
+from acslib.ccure.base import CcureConnection, ACSRequestData
+from acslib.ccure.config import CcureConfigFactory
+from faker import Faker
+fake = Faker()
+
+BASE_CONFIG = {
+    "CCURE_USERNAME": "test",
+    "CCURE_PASSWORD": "test",
+    "CCURE_BASE_URL": "https://example.com/ccure",
+    "CCURE_CLIENT_NAME": "test",
+    "CCURE_CLIENT_VERSION": "test",
+    "CCURE_CLIENT_ID": "test",
+}
+
+
+@dataclass
+class MockResponse:
+    status_code: int = 200
+    _json: dict = field(default_factory=dict)
+    headers: dict = field(default_factory=dict)
+    text: str = ""
+
+    def json(self):
+        return self._json
+
+
+@pytest.fixture
+def config():
+    """."""
+    return CcureConfigFactory(api_version=2, **BASE_CONFIG)
+
+
+@pytest.fixture
+def ccure_connection(config):
+    """."""
+    return CcureConnection(config=config)
+
+
+@pytest.fixture
+def base_mock_response():
+    """."""
+    def _mock_response(json=None, headers=None, text="", status_code=200):
+
+        return MockResponse(
+            **{
+                "_json": json if json else {},
+                "headers": headers if headers else {},
+                "text": text,
+                "status_code": status_code
+            }
+        )
+    return _mock_response
+
+
+@pytest.fixture
+def response_w_session(base_mock_response):
+    Faker.seed(random.randint(0, 10000))
+    return base_mock_response(headers={"session-id": fake.lexify("session-?????????????????")})
+

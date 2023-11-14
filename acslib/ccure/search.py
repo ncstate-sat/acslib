@@ -64,6 +64,8 @@ class PersonnelFilter(ACSFilter):
         self.display_properties += properties
 
     def filter(self, search: list[str]) -> str:
+        if not isinstance(search, list):
+            raise TypeError("Search must be a list of strings")
         search_filter = ""
         for term in search:
             search_filter += self._compile_term(term) + f" {self.outer_bool} "

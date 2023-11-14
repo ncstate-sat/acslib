@@ -6,7 +6,7 @@ from acslib.base import ACSConfig, ACSConfigException
 class CcureConfig(ACSConfig):
     """
     CcureConfig returns an object that implements the ACSConfig interface.
-    It expects the following environment variables to be set:
+    It expects the following variables to be set either in the environment or passed as kwargs:
         CCURE_USERNAME
         CCURE_PASSWORD
         CCURE_BASE_URL
@@ -24,12 +24,12 @@ class CcureConfig(ACSConfig):
         self.clearance_limit = kwargs.get("clearance_limit", 40)
         self.timeout = kwargs.get("timeout", 3)
         self.endpoints = None
-        self.username = os.getenv("CCURE_USERNAME")
-        self.password = os.getenv("CCURE_PASSWORD")
-        self.base_url = os.getenv("CCURE_BASE_URL")
-        self.client_name = os.getenv("CCURE_CLIENT_NAME")
-        self.client_version = os.getenv("CCURE_CLIENT_VERSION")
-        self.client_id = os.getenv("CCURE_CLIENT_ID")
+        self.username = kwargs.get("CCURE_USERNAME", os.getenv("CCURE_USERNAME"))
+        self.password = kwargs.get("CCURE_PASSWORD", os.getenv("CCURE_PASSWORD"))
+        self.base_url = kwargs.get("CCURE_BASE_URL", os.getenv("CCURE_BASE_URL"))
+        self.client_name = kwargs.get("CCURE_CLIENT_NAME", os.getenv("CCURE_CLIENT_NAME"))
+        self.client_version = kwargs.get("CCURE_CLIENT_VERSION", os.getenv("CCURE_CLIENT_VERSION"))
+        self.client_id = kwargs.get("CCURE_CLIENT_ID", os.getenv("CCURE_CLIENT_ID"))
         if not all(
             [
                 self.username,

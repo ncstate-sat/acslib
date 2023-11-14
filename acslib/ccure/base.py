@@ -1,20 +1,17 @@
-from typing import Iterable, Callable
 import logging
 from numbers import Number
-from acslib.base import status
-import requests
-
 from acslib.base import (
     AccessControlSystem,
     ACSConnection,
     ACSRequestException,
     ACSRequestResponse,
     ACSRequestData,
+    status,
 )
+from acslib.base.connection import ACSRequestMethod
 from acslib.base.search import ACSFilter
 from acslib.ccure.config import CcureConfigFactory
 from acslib.ccure.search import PersonnelFilter, SearchTypes
-
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +39,10 @@ class CcureConnection(ACSConnection):
 
     def login(self):
         """."""
+        super().login()
         try:
             response = self.request(
-                requests.post,
+                ACSRequestMethod.POST,
                 request_data=ACSRequestData(
                     url=self.config.base_url + self.config.endpoints.LOGIN,
                     data=self.config.connection_data,
@@ -65,9 +63,9 @@ class CcureConnection(ACSConnection):
             self.logger.debug(f"Logging out of CCure session: {self.session_id}")
             try:
                 self.request(
-                    requests.post,
+                    ACSRequestMethod.POST,
                     request_data=ACSRequestData(
-                        url=self.config.BASE_URL + self.config.endpoints.LOGOUT,
+                        url=self.config.base_url + self.config.endpoints.LOGOUT,
                         headers={"session-id": self.session_id},
                     ),
                 )
@@ -88,14 +86,13 @@ class CcureConnection(ACSConnection):
     def keepalive(self):
         """
         Prevent the CCure api session from expiring from inactivity.
-        Runs every minute in the scheduler.
         """
         self.logger.debug(f"Keeeping CCure session alive: {self.session_id}")
         try:
             self.request(
-                requests.post,
+                ACSRequestMethod.POST,
                 request_data=ACSRequestData(
-                    url=self.config.BASE_URL + self.config.endpoints.KEEPALIVE,
+                    url=self.config.base_url + self.config.endpoints.KEEPALIVE,
                     headers={
                         "session-id": self.get_session_id(),
                         "Access-Control-Expose-Headers": "session-id",
@@ -110,7 +107,7 @@ class CcureConnection(ACSConnection):
 
     def request(
         self,
-        requests_method: Callable,
+        requests_method: ACSRequestMethod,
         request_data: ACSRequestData,
         timeout: Number = 0,
         request_attempts: int = 2,
@@ -132,6 +129,7 @@ class CcureConnection(ACSConnection):
             self.config.timeout = timeout
         while request_attempts > 0:
             try:
+
                 return super().request(requests_method, request_data)
             except ACSRequestException as e:
                 if e.status_code != status.HTTP_401_UNAUTHORIZED or request_attempts == 1:
@@ -142,11 +140,11 @@ class CcureConnection(ACSConnection):
 
     def log_session_details(self):
         """Log session ID and the api version number"""
-        version_url = self.config.BASE_URL + self.config.endpoints.VERSIONS
+        version_url = self.config.base_url + self.config.endpoints.VERSIONS
         self.logger.error(f"Session ID: {self.session_id}")
         try:
             response = self.request(
-                requests.post,
+                ACSRequestMethod.POST,
                 request_data=ACSRequestData(url=version_url),
             ).json
             self.logger.debug(f"CCure webservice version: {response.get('webServiceVersion')}")
@@ -177,7 +175,7 @@ class CcureACS(AccessControlSystem):
             del request_json["DisplayProperties"]
 
         return self.connection.request(
-            requests.post,
+            ACSRequestMethod.POST,
             request_data=ACSRequestData(
                 url=self.connection.config.base_url + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
                 json=request_json,
