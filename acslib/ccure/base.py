@@ -31,6 +31,7 @@ class CcureConnection(ACSConnection):
             self.logger = logger
         if not kwargs.get("config"):
             kwargs["config"] = CcureConfigFactory()
+        self.logger.info("Initializing CCure connection")
         super().__init__(**kwargs)
 
     @property
@@ -170,7 +171,9 @@ class CcureACS(AccessControlSystem):
         """."""
         return self.connection.config
 
-    def _search_people(self, search_filter: PersonnelFilter, terms) -> ACSRequestResponse:
+    def _search_people(self, terms, search_filter: ACSFilter = None) -> ACSRequestResponse:
+        if not search_filter:
+            search_filter = PersonnelFilter()
         request_json = {
             "TypeFullName": "Personnel",
             "DisplayProperties": search_filter.display_properties,
@@ -198,7 +201,7 @@ class CcureACS(AccessControlSystem):
             case search_type.PERSONNEL:
                 self.logger.info("Searching for personnel")
                 if search_filter:
-                    return self._search_people(search_filter, terms)
-                return self._search_people(PersonnelFilter(), terms)
+                    return self._search_people(terms, search_filter)
+                return self._search_people(terms)
             case _:
                 raise ValueError(f"Invalid search type: {search_type}")
