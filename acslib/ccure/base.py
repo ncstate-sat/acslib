@@ -1,11 +1,12 @@
 import logging
 from numbers import Number
+
 from acslib.base import (
     AccessControlSystem,
     ACSConnection,
+    ACSRequestData,
     ACSRequestException,
     ACSRequestResponse,
-    ACSRequestData,
     status,
 )
 from acslib.base.connection import ACSRequestMethod
@@ -17,17 +18,20 @@ logger = logging.getLogger(__name__)
 
 
 class CcureConnection(ACSConnection):
-    """."""
-
     def __init__(self, **kwargs):
-        """."""
-        super().__init__(**kwargs)
+        """
+        A connection object to the CCure Server.
+        Parameters:
+        :param kwargs:
+        """
         self.session_id = None
         if con_logger := kwargs.get("logger"):
             self.logger = con_logger
         else:
             self.logger = logger
-        self.config = kwargs.get("config", CcureConfigFactory())
+        if not kwargs.get("config"):
+            kwargs["config"] = CcureConfigFactory()
+        super().__init__(**kwargs)
 
     @property
     def headers(self):
@@ -39,7 +43,6 @@ class CcureConnection(ACSConnection):
 
     def login(self):
         """."""
-        super().login()
         try:
             response = self.request(
                 ACSRequestMethod.POST,
@@ -129,7 +132,6 @@ class CcureConnection(ACSConnection):
             self.config.timeout = timeout
         while request_attempts > 0:
             try:
-
                 return super().request(requests_method, request_data)
             except ACSRequestException as e:
                 if e.status_code != status.HTTP_401_UNAUTHORIZED or request_attempts == 1:
@@ -163,6 +165,11 @@ class CcureACS(AccessControlSystem):
             self.connection = CcureConnection()
         self.logger = self.connection.logger
 
+    @property
+    def config(self):
+        """."""
+        return self.connection.config
+
     def _search_people(self, search_filter: PersonnelFilter, terms) -> ACSRequestResponse:
         request_json = {
             "TypeFullName": "Personnel",
@@ -177,13 +184,16 @@ class CcureACS(AccessControlSystem):
         return self.connection.request(
             ACSRequestMethod.POST,
             request_data=ACSRequestData(
-                url=self.connection.config.base_url + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
+                url=self.connection.config.base_url
+                + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
                 json=request_json,
                 headers=self.connection.headers,
             ),
         )
 
-    def search(self, search_type: SearchTypes, terms: list, search_filter: ACSFilter = None) -> ACSRequestResponse:
+    def search(
+        self, search_type: SearchTypes, terms: list, search_filter: ACSFilter = None
+    ) -> ACSRequestResponse:
         match search_type:
             case search_type.PERSONNEL:
                 self.logger.info("Searching for personnel")

@@ -1,4 +1,5 @@
 from enum import Enum
+
 from acslib.base.search import ACSFilter, BooleanOperators, TermOperators
 
 
@@ -24,10 +25,7 @@ FUZZ = full_fuzz
 NFUZZ = no_fuzz
 
 
-PERSONNEL_LOOKUP_FIELDS = [
-    ('FirstName', FUZZ),
-    ('LastName', FUZZ)
-]
+PERSONNEL_LOOKUP_FIELDS = [("FirstName", FUZZ), ("LastName", FUZZ)]
 
 
 class SearchTypes(Enum):
@@ -35,19 +33,26 @@ class SearchTypes(Enum):
 
 
 class PersonnelFilter(ACSFilter):
+    """Basic CCure Personnel Filter
+    :param lookups: List of tuples containing the field name and the lookup function
+    :param outer_bool: Boolean operator to use between search terms
+    :param inner_bool: Boolean operator to use between lookups
+    :param term_operator: Term operator to use between field and a search term
+    :attribute
+    """
 
     def __init__(
         self,
         lookups: list[tuple[str, callable]] = None,
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
-        term_operator=TermOperators.FUZZY
+        term_operator=TermOperators.FUZZY,
     ):
-
         self.filter_fields = lookups if lookups else PERSONNEL_LOOKUP_FIELDS
         self.outer_bool = outer_bool.value
         self.inner_bool = inner_bool.value
         self.term_operator = term_operator.value
+        #: List of properties from CCURE to be included in the CCURE response
         self.display_properties = ["FirstName", "MiddleName", "LastName"]
 
     def _compile_term(self, term: str) -> str:
@@ -56,11 +61,15 @@ class PersonnelFilter(ACSFilter):
             if not i:
                 accumulator += f"({lookup[0]} {self.term_operator} '{lookup[1](term)}' "
             else:
-                accumulator += f"{self.inner_bool} {lookup[0]} {self.term_operator} '{lookup[1](term)}' "
+                accumulator += (
+                    f"{self.inner_bool} {lookup[0]} {self.term_operator} '{lookup[1](term)}' "
+                )
         accumulator = accumulator.rstrip() + ")"
         return accumulator
 
     def update_display_properties(self, properties: list[str]):
+        if not isinstance(properties, list):
+            raise TypeError("Properties must be a list of strings")
         self.display_properties += properties
 
     def filter(self, search: list[str]) -> str:

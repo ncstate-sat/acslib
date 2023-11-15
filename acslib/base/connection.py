@@ -4,8 +4,9 @@ from enum import Enum
 from typing import Any, Optional
 
 import requests
-from acslib.base import status
 from pydantic import BaseModel, Field
+
+from acslib.base import status
 
 
 class ACSConnectionException(Exception):
@@ -58,11 +59,8 @@ class ACSRequestData(BaseModel):
 
 
 class ACSConnection(ABC):
-
     def __init__(self, **kwargs):
         self.config = kwargs.get("config")
-        if not self.config:
-            raise ACSConnectionException("No config provided")
         self.timeout = kwargs.get("timeout", 1)
         self.response = None
 
@@ -169,6 +167,3 @@ class ACSConnection(ABC):
                 status_code=status.HTTP_400_BAD_REQUEST, log_message=response.text
             )
         raise ACSRequestException(status_code=response.status_code, log_message=response.text)
-
-
-
