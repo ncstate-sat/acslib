@@ -1,5 +1,6 @@
 import logging
 from numbers import Number
+from typing import Optional
 
 from acslib.base import (
     AccessControlSystem,
@@ -12,7 +13,7 @@ from acslib.base import (
 from acslib.base.connection import ACSRequestMethod
 from acslib.base.search import ACSFilter
 from acslib.ccure.config import CcureConfigFactory
-from acslib.ccure.search import PersonnelFilter, SearchTypes
+from acslib.ccure.search import PersonnelFilter, ClearanceFilter, SearchTypes
 
 logger = logging.getLogger(__name__)
 
@@ -171,7 +172,7 @@ class CcureACS(AccessControlSystem):
         """."""
         return self.connection.config
 
-    def _search_people(self, terms, search_filter: ACSFilter = None) -> ACSRequestResponse:
+    def _search_people(self, terms, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
         if not search_filter:
             search_filter = PersonnelFilter()
         request_json = {
@@ -194,14 +195,38 @@ class CcureACS(AccessControlSystem):
             ),
         )
 
+    def _search_clearances(self, terms, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
+        if not search_filter:
+            search_filter = ClearanceFilter()
+        request_json = {
+            "TypeFullName": "Clearance",
+            "DisplayProperties": search_filter.display_properties,
+            "pageSize": self.connection.config.page_size,
+            "pageNumber": 1,
+            "WhereClause": search_filter.filter(terms),
+        }
+        if not search_filter.display_properties:
+            del request_json["DisplayProperties"]
+
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.connection.config.base_url
+                + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
+                json=request_json,
+                headers=self.connection.headers,
+            ),
+        )
+
     def search(
-        self, search_type: SearchTypes, terms: list, search_filter: ACSFilter = None
+        self, search_type: SearchTypes, terms: list, search_filter: Optional[ACSFilter] = None
     ) -> ACSRequestResponse:
         match search_type:
             case search_type.PERSONNEL:
                 self.logger.info("Searching for personnel")
-                if search_filter:
-                    return self._search_people(terms, search_filter)
-                return self._search_people(terms)
+                return self._search_people(terms, search_filter)
+            case search_type.CLEARANCE:
+                self.logger.info("Searching for clearances")
+                return self._search_clearances(terms, search_filter)
             case _:
                 raise ValueError(f"Invalid search type: {search_type}")
