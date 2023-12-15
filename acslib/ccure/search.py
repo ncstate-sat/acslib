@@ -33,8 +33,8 @@ class SearchTypes(Enum):
     CLEARANCE = "clearance"
 
 
-class PersonnelFilter(ACSFilter):
-    """Basic CCure Personnel Filter
+class BaseCcureFilter(ACSFilter):
+    """Base CCure Filter
     :param lookups: List of tuples containing the field name and the lookup function
     :param outer_bool: Boolean operator to use between search terms
     :param inner_bool: Boolean operator to use between lookups
@@ -49,7 +49,7 @@ class PersonnelFilter(ACSFilter):
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
     ):
-        self.filter_fields = lookups if lookups else PERSONNEL_LOOKUP_FIELDS
+        self.filter_fields = lookups
         self.outer_bool = outer_bool.value
         self.inner_bool = inner_bool.value
         self.term_operator = term_operator.value
@@ -72,6 +72,25 @@ class PersonnelFilter(ACSFilter):
         if not isinstance(properties, list):
             raise TypeError("Properties must be a list of strings")
         self.display_properties += properties
+
+    def filter(self, search):
+        pass
+
+
+class PersonnelFilter(BaseCcureFilter):
+    """Basic CCure Personnel Filter
+    :param lookups: List of tuples containing the field name and the lookup function
+    :param outer_bool: Boolean operator to use between search terms
+    :param inner_bool: Boolean operator to use between lookups
+    :param term_operator: Term operator to use between field and a search term
+    :attribute
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if not self.filter_fields:
+            self.filter_fields = PERSONNEL_LOOKUP_FIELDS
+        self.display_properties = ["FirstName", "MiddleName", "LastName"]
 
     def filter(self, search: list[str]) -> str:
         if not isinstance(search, list):

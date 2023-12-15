@@ -59,6 +59,14 @@ class ACSRequestData(BaseModel):
 
 
 class ACSConnection(ABC):
+    REQUEST_TYPE = {
+        ACSRequestMethod.GET: requests.get,
+        ACSRequestMethod.POST: requests.post,
+        ACSRequestMethod.PUT: requests.put,
+        ACSRequestMethod.DELETE: requests.delete,
+        ACSRequestMethod.PATCH: requests.patch,
+    }
+
     def __init__(self, **kwargs):
         self.config = kwargs.get("config")
         self.timeout = kwargs.get("timeout", 1)
@@ -114,20 +122,9 @@ class ACSConnection(ABC):
         return "&".join(get_form_entries(data))
 
     def _make_request(self, requests_method: ACSRequestMethod, request_data_map: dict):
-        match requests_method:
-            case ACSRequestMethod.GET:
-                req = requests.get
-            case ACSRequestMethod.POST:
-                req = requests.post
-            case ACSRequestMethod.PUT:
-                req = requests.put
-            case ACSRequestMethod.DELETE:
-                req = requests.delete
-            case ACSRequestMethod.PATCH:
-                req = requests.patch
-            case _:
-                raise ACSRequestException("Invalid request method")
-        return req(**request_data_map, timeout=self.timeout)
+        if req := self.REQUEST_TYPE.get(requests_method):
+            return req(**request_data_map, timeout=self.timeout)
+        raise ACSConnectionException(f"Invalid request method: {requests_method}")
 
     def request(
         self, requests_method: ACSRequestMethod, request_data: ACSRequestData

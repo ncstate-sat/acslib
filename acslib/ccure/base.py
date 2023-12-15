@@ -166,13 +166,15 @@ class CcureACS(AccessControlSystem):
         if not self.connection:
             self.connection = CcureConnection()
         self.logger = self.connection.logger
+        self.request_options = {}
+        self.search_filter = None
 
     @property
     def config(self):
         """."""
         return self.connection.config
 
-    def _search_people(self, terms, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
+    def _search_people(self, terms: list, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
         if not search_filter:
             search_filter = PersonnelFilter()
         request_json = {
@@ -195,7 +197,7 @@ class CcureACS(AccessControlSystem):
             ),
         )
 
-    def _search_clearances(self, terms, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
+    def _search_clearances(self, terms: list, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
         if not search_filter:
             search_filter = ClearanceFilter()
         request_json = {
