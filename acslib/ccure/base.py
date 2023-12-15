@@ -199,11 +199,14 @@ class CcureACS(AccessControlSystem):
         if not search_filter:
             search_filter = ClearanceFilter()
         request_json = {
-            "TypeFullName": "Clearance",
-            "DisplayProperties": search_filter.display_properties,
+            "partitionList": [],
+            "propertyList": search_filter.display_properties,
             "pageSize": self.connection.config.page_size,
             "pageNumber": 1,
-            "WhereClause": search_filter.filter(terms),
+            "whereClause": search_filter.filter(terms),
+            "sortColumnName": "",
+            "whereArgList": [],
+            "explicitPropertyList": [],
         }
         if not search_filter.display_properties:
             del request_json["DisplayProperties"]
@@ -212,7 +215,7 @@ class CcureACS(AccessControlSystem):
             ACSRequestMethod.POST,
             request_data=ACSRequestData(
                 url=self.connection.config.base_url
-                + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
+                + self.connection.config.endpoints.CLEARANCES_FOR_ASSIGNMENT,
                 json=request_json,
                 headers=self.connection.headers,
             ),

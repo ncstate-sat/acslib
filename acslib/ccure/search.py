@@ -104,7 +104,7 @@ class ClearanceFilter(ACSFilter):
         self.inner_bool = inner_bool.value
         self.term_operator = term_operator.value
         #: List of properties from CCURE to be included in the CCURE response
-        self.display_properties = ["Name", "ObjectID"]  # TODO prob just name
+        self.display_properties = ["Name"]
 
     def _compile_term(self, term: str) -> str:
         """Get all parts of the query for one search term"""
