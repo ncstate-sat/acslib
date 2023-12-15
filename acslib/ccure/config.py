@@ -1,6 +1,7 @@
 import os
-from acslib.ccure.endpoints import V2Endpoints
+
 from acslib.base import ACSConfig, ACSConfigException
+from acslib.ccure.endpoints import V2Endpoints
 
 
 class CcureConfig(ACSConfig):
@@ -19,8 +20,10 @@ class CcureConfig(ACSConfig):
     :param kwargs:
     :return: CcureConfig
     """
+
     def __init__(self, **kwargs):
         self.page_size = kwargs.get("page_size", 100)
+        self.current_page = 1
         self.clearance_limit = kwargs.get("clearance_limit", 40)
         self.timeout = kwargs.get("timeout", 3)
         self.endpoints = None
@@ -63,11 +66,11 @@ class CcureConfig(ACSConfig):
 class CcureConfigFactory:
     def __new__(cls, *args, **kwargs) -> CcureConfig:
         """
-            CcuureConfigFactory returns a CcureConfig instance with the correct endpoints for the requested API version.
-            The default api version is 2.
-            :param args:
-            :param kwargs:
-            :return: CcureConfig
+        CcuureConfigFactory returns a CcureConfig instance with the correct endpoints for the requested API version.
+        The default api version is 2.
+        :param args:
+        :param kwargs:
+        :return: CcureConfig
         """
         api_version = kwargs.get("api_version", 2)
         instance = CcureConfig(**kwargs)

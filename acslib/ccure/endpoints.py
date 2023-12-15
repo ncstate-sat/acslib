@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 
+# from acslib.ccure.base import CcureACS
+# from acslib.base.connection import ACSRequestData
+
 
 @dataclass
 class V2Endpoints:
@@ -13,3 +16,12 @@ class V2Endpoints:
     KEEPALIVE = "/victorwebservice/api/v2/session/keepalive"
     VERSIONS = "/victorwebservice/api/Generic/Versions"
     DISABLE = "/victorwebservice/api/v2/objects/SetProperty"
+
+
+# class FindObjsWithCriteria(CcureACS):
+#     def __init__(self, connection, **kwargs):
+#         super().__init__(connection)
+#         self.type_full_name = kwargs.get("type_full_name")
+#         self.page_size = kwargs.get("page_size", self.connection.config.page_size)
+#         self.page_number = kwargs.get("page_number", 1)
+#         self.where_clause = kwargs.get("where_clause", "")

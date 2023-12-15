@@ -12,7 +12,6 @@ from acslib.base import (
 from acslib.base.connection import ACSRequestMethod
 from acslib.base.search import ACSFilter
 from acslib.ccure.config import CcureConfigFactory
-from acslib.ccure.search import PersonnelFilter, SearchTypes
 
 logger = logging.getLogger(__name__)
 
@@ -165,43 +164,22 @@ class CcureACS(AccessControlSystem):
         if not self.connection:
             self.connection = CcureConnection()
         self.logger = self.connection.logger
+        self.request_options = {}
+        self.search_filter = None
 
     @property
     def config(self):
         """."""
         return self.connection.config
 
-    def _search_people(self, terms, search_filter: ACSFilter = None) -> ACSRequestResponse:
-        if not search_filter:
-            search_filter = PersonnelFilter()
-        request_json = {
-            "TypeFullName": "Personnel",
-            "DisplayProperties": search_filter.display_properties,
-            "pageSize": self.connection.config.page_size,
-            "pageNumber": 1,
-            "WhereClause": search_filter.filter(terms),
-        }
-        if not search_filter.display_properties:
-            del request_json["DisplayProperties"]
+    def search(self, terms: list, search_filter: ACSFilter = None) -> ACSRequestResponse:
+        raise NotImplementedError
 
-        return self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.connection.config.base_url
-                + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
-                json=request_json,
-                headers=self.connection.headers,
-            ),
-        )
+    def update(self, record_id: str, update_data: dict) -> ACSRequestResponse:
+        raise NotImplementedError
 
-    def search(
-        self, search_type: SearchTypes, terms: list, search_filter: ACSFilter = None
-    ) -> ACSRequestResponse:
-        match search_type:
-            case search_type.PERSONNEL:
-                self.logger.info("Searching for personnel")
-                if search_filter:
-                    return self._search_people(terms, search_filter)
-                return self._search_people(terms)
-            case _:
-                raise ValueError(f"Invalid search type: {search_type}")
+    def create(self, create_data: dict) -> ACSRequestResponse:
+        raise NotImplementedError
+
+    def delete(self, record_id: str) -> ACSRequestResponse:
+        raise NotImplementedError
