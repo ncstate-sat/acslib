@@ -4,19 +4,19 @@ from acslib.base.search import ACSFilter, BooleanOperators, TermOperators
 
 
 def left_fuzz(term):
-    return f"%{term}"
+    return f"'%{term}'"
 
 
 def right_fuzz(term):
-    return f"{term}%"
+    return f"'{term}%'"
 
 
 def full_fuzz(term):
-    return f"%{term}%"
+    return f"'%{term}%'"
 
 
 def no_fuzz(term):
-    return term
+    return f"'{term}'"
 
 
 LFUZZ = left_fuzz

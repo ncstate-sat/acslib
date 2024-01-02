@@ -192,7 +192,7 @@ class CcureACS(AccessControlSystem):
             request_data=ACSRequestData(
                 url=self.connection.config.base_url
                 + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
-                json=request_json,
+                request_json=request_json,
                 headers=self.connection.headers,
             ),
         )
@@ -218,7 +218,7 @@ class CcureACS(AccessControlSystem):
             request_data=ACSRequestData(
                 url=self.connection.config.base_url
                 + self.connection.config.endpoints.CLEARANCES_FOR_ASSIGNMENT,
-                json=request_json,
+                request_json=request_json,
                 headers=self.connection.headers,
             ),
         )

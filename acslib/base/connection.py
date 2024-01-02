@@ -55,7 +55,7 @@ class ACSRequestData(BaseModel):
     url: str
     headers: Optional[dict] = {}
     data: Optional[dict] = {}
-    json: Optional[dict] = Field(alias="json", default=json.loads("{}"))
+    request_json: Optional[dict] = Field(alias="json", default=json.loads("{}"))
 
 
 class ACSConnection(ABC):
@@ -144,6 +144,7 @@ class ACSConnection(ABC):
 
         try:
             request_data_map = request_data.model_dump()
+            request_data_map["json"] = request_data_map.pop("request_json")
             request_data_map["data"] = self._encode_data(request_data_map.get("data", {}))
             response = self._make_request(requests_method, request_data_map)
         except requests.HTTPError:

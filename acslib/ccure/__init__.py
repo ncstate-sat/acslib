@@ -30,7 +30,7 @@ class CCurePersonnel(CcureACS):
             ACSRequestMethod.POST,
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
-                json=request_json,
+                request_json=request_json,
                 headers=self.connection.headers,
             ),
         )
@@ -43,7 +43,7 @@ class CCurePersonnel(CcureACS):
             ACSRequestMethod.POST,
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
-                json=self.request_options,
+                request_json=self.request_options,
                 headers=self.connection.headers,
             ),
         ).json
@@ -85,7 +85,7 @@ class CCureClearance(CcureACS):
             request_data=ACSRequestData(
                 url=self.connection.config.base_url
                 + self.connection.config.endpoints.CLEARANCES_FOR_ASSIGNMENT,
-                json=request_json,
+                request_json=request_json,
                 headers=self.connection.headers,
             ),
         )
@@ -102,7 +102,7 @@ class CCureClearance(CcureACS):
             ACSRequestMethod.POST,
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
-                json=request_options,
+                request_json=request_options,
                 headers=self.connection.headers,
             ),
         ).json
