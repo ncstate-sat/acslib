@@ -53,9 +53,9 @@ class ACSRequestData(BaseModel):
     """Kwargs used in requests get/post/etc methods"""
 
     url: str
-    headers: Optional[dict] = {}
-    data: Optional[dict] = {}
-    request_json: Optional[dict] = Field(alias="json", default=json.loads("{}"))
+    headers: Optional[dict]
+    data: Optional[dict]
+    request_json: Optional[dict]
 
 
 class ACSConnection(ABC):
@@ -143,9 +143,11 @@ class ACSConnection(ABC):
         """
 
         try:
-            request_data_map = request_data.model_dump()
-            request_data_map["json"] = request_data_map.pop("request_json")
-            request_data_map["data"] = self._encode_data(request_data_map.get("data", {}))
+            # remove request_data_map properties with None values
+            request_data_map = dict(request_data)
+            request_data_map["json"] = request_data_map.pop("request_json", None)
+            request_data_map["data"] = request_data_map.get("data", {})
+            request_data_map = {k: v for k, v in request_data_map.items() if v is not None}
             response = self._make_request(requests_method, request_data_map)
         except requests.HTTPError:
             # An HTTP error occurred.

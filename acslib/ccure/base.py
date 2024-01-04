@@ -13,7 +13,7 @@ from acslib.base import (
 from acslib.base.connection import ACSRequestMethod
 from acslib.base.search import ACSFilter
 from acslib.ccure.config import CcureConfigFactory
-from acslib.ccure.search import PersonnelFilter, ClearanceFilter, SearchTypes
+from acslib.ccure.search import PersonnelFilter, ClearanceFilter, SearchTypes, FUZZ
 
 logger = logging.getLogger(__name__)
 
@@ -160,7 +160,7 @@ class CcureConnection(ACSConnection):
 class CcureACS(AccessControlSystem):
     """."""
 
-    def __init__(self, connection: CcureConnection = None):
+    def __init__(self, connection: Optional[CcureConnection] = None):
         """."""
         super().__init__(connection=connection)
         if not self.connection:
@@ -199,7 +199,7 @@ class CcureACS(AccessControlSystem):
 
     def _search_clearances(self, terms: list, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
         if not search_filter:
-            search_filter = ClearanceFilter()
+            search_filter = ClearanceFilter(lookups={"Name": FUZZ})
         request_json = {
             "partitionList": [],
             "propertyList": search_filter.display_properties,
@@ -227,10 +227,10 @@ class CcureACS(AccessControlSystem):
         self, search_type: SearchTypes, terms: list, search_filter: Optional[ACSFilter] = None
     ) -> ACSRequestResponse:
         match search_type:
-            case search_type.PERSONNEL:
+            case SearchTypes.PERSONNEL.value:
                 self.logger.info("Searching for personnel")
                 return self._search_people(terms, search_filter)
-            case search_type.CLEARANCE:
+            case SearchTypes.CLEARANCE.value:
                 self.logger.info("Searching for clearances")
                 return self._search_clearances(terms, search_filter)
             case _:
