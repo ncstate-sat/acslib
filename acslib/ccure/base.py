@@ -213,7 +213,7 @@ class CcureACS(AccessControlSystem):
         if not search_filter.display_properties:
             del request_json["DisplayProperties"]
 
-        return self.connection.request(
+        response = self.connection.request(
             ACSRequestMethod.POST,
             request_data=ACSRequestData(
                 url=self.connection.config.base_url
@@ -222,6 +222,10 @@ class CcureACS(AccessControlSystem):
                 headers=self.connection.headers,
             ),
         )
+        if response.json:
+            response.json = response.json[1:]
+
+        return response
 
     def search(
         self, search_type: SearchTypes, terms: list, search_filter: Optional[ACSFilter] = None

@@ -53,9 +53,9 @@ class ACSRequestData(BaseModel):
     """Kwargs used in requests get/post/etc methods"""
 
     url: str
-    headers: Optional[dict]
-    data: Optional[dict]
-    request_json: Optional[dict]
+    headers: Optional[dict] = None
+    data: Optional[dict] = None
+    request_json: Optional[dict] = None
 
 
 class ACSConnection(ABC):
