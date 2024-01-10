@@ -68,6 +68,12 @@ class BaseCcureFilter(ACSFilter):
         accumulator = accumulator.rstrip() + ")"
         return accumulator
 
+    def _compile_term2(self, term: str) -> str:
+        """Get all parts of the query for one search term"""
+        fields = [(field_name, lookup(term)) for field_name, lookup in self.filter_fields.items()]
+        field_queries = [f"{field_name} {self.term_operator} {lookup}" for field_name, lookup in fields]
+        return f"({self.inner_bool.join(field_queries)})"
+
     def update_display_properties(self, properties: list[str]):
         if not isinstance(properties, list):
             raise TypeError("Properties must be a list of strings")
@@ -101,7 +107,7 @@ class PersonnelFilter(BaseCcureFilter):
         return search_filter.rstrip(f" {self.outer_bool} ")
 
 
-class ClearanceFilter(ACSFilter):
+class ClearanceFilter(BaseCcureFilter):
     """Basic CCure Clearance Filter
     :param lookups: List of tuples containing the field name and the lookup function
     :param outer_bool: Boolean operator to use between search terms
@@ -124,18 +130,7 @@ class ClearanceFilter(ACSFilter):
         # List of properties from CCURE to be included in the CCURE response
         self.display_properties = ["Name"]
 
-    def _compile_term(self, term: str) -> str:
-        """Get all parts of the query for one search term"""
-        fields = [(field_name, lookup(term)) for field_name, lookup in self.filter_fields.items()]
-        field_queries = [f"{field_name} {self.term_operator} {lookup}" for field_name, lookup in fields]
-        return f"({self.inner_bool.join(field_queries)})"
-
-    def update_display_properties(self, properties: list[str]):
-        if not isinstance(properties, list):
-            raise TypeError("Properties must be a list of strings")
-        self.display_properties += properties
-
     def filter(self, search: list[str]) -> str:
         if not isinstance(search, list):
             raise TypeError("Search must be a list of strings")
-        return self.outer_bool.join(self._compile_term(term) for term in search)
+        return self.outer_bool.join(self._compile_term2(term) for term in search)
