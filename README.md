@@ -58,3 +58,25 @@ response = cc_personnel.search(terms=["PER0892347"], search_filter=search)
 ```
 
 ### Find a Clearance by name
+
+```python
+import acslib
+
+ccure_acs = acslib.CcureACS()
+response = ccure_acs.search(search_type="clearance", terms=["suite", "door"])
+```
+
+### Find a Clearance by other field
+
+```python
+import acslib
+from acslib.ccure.search import ClearanceFilter, NFUZZ
+
+# search by ObjectID
+ccure_acs = acslib.CcureACS()
+response = ccure_acs.search(
+    search_type="clearance",
+    terms=["8897"],
+    search_filter=ClearanceFilter(lookups={"ObjectID": NFUZZ})
+)
+```
