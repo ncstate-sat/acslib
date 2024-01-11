@@ -16,7 +16,7 @@ def full_fuzz(term):
 
 
 def no_fuzz(term):
-    return f"{term}"
+    return term
 
 
 LFUZZ = left_fuzz
