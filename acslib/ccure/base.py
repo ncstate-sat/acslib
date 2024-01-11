@@ -1,5 +1,6 @@
 import logging
 from numbers import Number
+from typing import Optional
 
 from acslib.base import (
     AccessControlSystem,
@@ -12,6 +13,7 @@ from acslib.base import (
 from acslib.base.connection import ACSRequestMethod
 from acslib.base.search import ACSFilter
 from acslib.ccure.config import CcureConfigFactory
+from acslib.ccure.search import PersonnelFilter, ClearanceFilter, SearchTypes, FUZZ
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +160,7 @@ class CcureConnection(ACSConnection):
 class CcureACS(AccessControlSystem):
     """."""
 
-    def __init__(self, connection: CcureConnection = None):
+    def __init__(self, connection: Optional[CcureConnection] = None):
         """."""
         super().__init__(connection=connection)
         if not self.connection:
@@ -172,14 +174,68 @@ class CcureACS(AccessControlSystem):
         """."""
         return self.connection.config
 
-    def search(self, terms: list, search_filter: ACSFilter = None) -> ACSRequestResponse:
-        raise NotImplementedError
+    def _search_people(self, terms: list, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
+        if not search_filter:
+            search_filter = PersonnelFilter()
+        request_json = {
+            "TypeFullName": "Personnel",
+            "DisplayProperties": search_filter.display_properties,
+            "pageSize": self.connection.config.page_size,
+            "pageNumber": 1,
+            "WhereClause": search_filter.filter(terms),
+        }
+        if not search_filter.display_properties:
+            del request_json["DisplayProperties"]
 
-    def update(self, record_id: str, update_data: dict) -> ACSRequestResponse:
-        raise NotImplementedError
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.connection.config.base_url
+                + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
+                request_json=request_json,
+                headers=self.connection.headers,
+            ),
+        )
 
-    def create(self, create_data: dict) -> ACSRequestResponse:
-        raise NotImplementedError
+    def _search_clearances(self, terms: list, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
+        if not search_filter:
+            search_filter = ClearanceFilter()
+        request_json = {
+            "partitionList": [],
+            "propertyList": search_filter.display_properties,
+            "pageSize": self.connection.config.page_size,
+            "pageNumber": 1,
+            "whereClause": search_filter.filter(terms),
+            "sortColumnName": "",
+            "whereArgList": [],
+            "explicitPropertyList": [],
+        }
+        if not search_filter.display_properties:
+            del request_json["DisplayProperties"]
 
-    def delete(self, record_id: str) -> ACSRequestResponse:
-        raise NotImplementedError
+        response = self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.connection.config.base_url
+                + self.connection.config.endpoints.CLEARANCES_FOR_ASSIGNMENT,
+                request_json=request_json,
+                headers=self.connection.headers,
+            ),
+        )
+        if response.json:
+            response.json = response.json[1:]
+
+        return response
+
+    def search(
+        self, search_type: SearchTypes, terms: list, search_filter: Optional[ACSFilter] = None
+    ) -> ACSRequestResponse:
+        match search_type:
+            case SearchTypes.PERSONNEL.value:
+                self.logger.info("Searching for personnel")
+                return self._search_people(terms, search_filter)
+            case SearchTypes.CLEARANCE.value:
+                self.logger.info("Searching for clearances")
+                return self._search_clearances(terms, search_filter)
+            case _:
+                raise ValueError(f"Invalid search type: {search_type}")
