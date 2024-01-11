@@ -199,7 +199,7 @@ class CcureACS(AccessControlSystem):
 
     def _search_clearances(self, terms: list, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
         if not search_filter:
-            search_filter = ClearanceFilter(lookups={"Name": FUZZ})
+            search_filter = ClearanceFilter()
         request_json = {
             "partitionList": [],
             "propertyList": search_filter.display_properties,
