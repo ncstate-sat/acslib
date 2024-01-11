@@ -35,7 +35,7 @@ class SearchTypes(Enum):
 
 class BaseCcureFilter(ACSFilter):
     """Base CCure Filter
-    :param lookups: List of tuples containing the field name and the lookup function
+    :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
     :param inner_bool: Boolean operator to use between lookups
     :param term_operator: Term operator to use between field and a search term
@@ -44,7 +44,7 @@ class BaseCcureFilter(ACSFilter):
 
     def __init__(
         self,
-        lookups: list[tuple[str, callable]] = None,
+        lookups: dict[str, callable] = None,
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
@@ -54,7 +54,7 @@ class BaseCcureFilter(ACSFilter):
         self.inner_bool = inner_bool.value
         self.term_operator = term_operator.value
         #: List of properties from CCURE to be included in the CCURE response
-        self.display_properties = ["FirstName", "MiddleName", "LastName", "ObjectID"]
+        self.display_properties = []
 
     def _compile_term(self, term: str) -> str:
         """Get all parts of the query for one search term"""
@@ -82,7 +82,7 @@ class PersonnelFilter(BaseCcureFilter):
 
     def __init__(
         self,
-        lookups: dict[str, callable] = [],
+        lookups: dict[str, callable] = {"FirstName": FUZZ, "LastName": FUZZ},
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
@@ -110,7 +110,7 @@ class ClearanceFilter(BaseCcureFilter):
 
     def __init__(
         self,
-        lookups: dict[str, callable] = [],
+        lookups: dict[str, callable] = {"Name": FUZZ},
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
