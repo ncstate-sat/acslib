@@ -91,7 +91,7 @@ class PersonnelFilter(BaseCcureFilter):
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
-        self.display_properties = ["FirstName", "MiddleName", "LastName"]
+        self.display_properties = ["FirstName", "MiddleName", "LastName", "ObjectID"]
 
     def filter(self, search: list[str]) -> str:
         if not isinstance(search, list):
