@@ -53,6 +53,7 @@ class ACSRequestData(BaseModel):
     """Kwargs used in requests get/post/etc methods"""
 
     url: str
+    params: Optional[dict] = None
     headers: Optional[dict] = None
     data: Optional[dict] = None
     request_json: Optional[dict] = None

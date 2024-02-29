@@ -31,6 +31,7 @@ CLEARANCE_LOOKUP_FIELDS = {"Name": FUZZ}
 class SearchTypes(Enum):
     PERSONNEL = "personnel"
     CLEARANCE = "clearance"
+    CREDENTIAL = "credential"
 
 
 class BaseCcureFilter(ACSFilter):

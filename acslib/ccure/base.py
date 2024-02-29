@@ -227,6 +227,33 @@ class CcureACS(AccessControlSystem):
 
         return response
 
+    def _search_credentials(self, terms: list[int], search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
+        if terms:
+            # return credentials associated with all given personnel
+            result = []
+            for person_object_id in terms:
+                response = self.connection.request(
+                    ACSRequestMethod.POST,
+                    request_data=ACSRequestData(
+                        url=self.connection.config.base_url
+                        + self.connection.config.endpoints.SEARCH_CREDENTIALS,
+                        params={"objId": person_object_id}
+                    ),
+                    headers=self.connection.headers
+                )
+                result.extend(response.json[1:])
+            return result
+        else:
+            # return all credentials
+            return self.connection.request(
+                ACSRequestMethod.GET,
+                request_data=ACSRequestData(
+                    url=self.connection.config.base_url
+                    + self.connection.config.endpoints.GET_CREDENTIALS
+                ),
+                headers=self.connection.headers
+            ).json[1:]
+
     def search(
         self, search_type: SearchTypes, terms: list, search_filter: Optional[ACSFilter] = None
     ) -> ACSRequestResponse:
@@ -237,5 +264,8 @@ class CcureACS(AccessControlSystem):
             case SearchTypes.CLEARANCE.value:
                 self.logger.info("Searching for clearances")
                 return self._search_clearances(terms, search_filter)
+            case SearchTypes.CREDENTIAL.value:
+                self.logger.info("Searching for credentials")
+                return self._search_credentials(terms, search_filter)
             case _:
                 raise ValueError(f"Invalid search type: {search_type}")
