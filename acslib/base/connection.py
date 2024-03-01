@@ -124,6 +124,7 @@ class ACSConnection(ABC):
 
     def _make_request(self, requests_method: ACSRequestMethod, request_data_map: dict):
         if req := self.REQUEST_TYPE.get(requests_method):
+            print(request_data_map)
             return req(**request_data_map, timeout=self.timeout)
         raise ACSConnectionException(f"Invalid request method: {requests_method}")
 
@@ -150,6 +151,8 @@ class ACSConnection(ABC):
             request_data_map["data"] = request_data_map.get("data", {})
             request_data_map = {k: v for k, v in request_data_map.items() if v is not None}
             response = self._make_request(requests_method, request_data_map)
+            print(requests_method)
+            print(response.url)
         except requests.HTTPError:
             # An HTTP error occurred.
             raise ACSRequestException(

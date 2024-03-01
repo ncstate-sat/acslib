@@ -15,7 +15,15 @@ from acslib.base.search import ACSFilter
 from acslib.ccure.config import CcureConfigFactory
 from acslib.ccure.search import PersonnelFilter, ClearanceFilter, SearchTypes, FUZZ
 
+
 logger = logging.getLogger(__name__)
+
+
+class CcureAPI:
+    def __init__(self):
+        self.personnel = CCurePersonnel()
+        self.clearance = CCureClearance()
+        self.credential = CCureCredential()
 
 
 class CcureConnection(ACSConnection):
@@ -168,6 +176,9 @@ class CcureACS(AccessControlSystem):
         self.logger = self.connection.logger
         self.request_options = {}
         self.search_filter = None
+        # self.personnel = CCurePersonnel(self.connection)
+        # self.clearance = CCureClearance(self.connection)
+        # self.credential = CCureCredential(self.connection)
 
     @property
     def config(self):
@@ -227,19 +238,166 @@ class CcureACS(AccessControlSystem):
 
         return response
 
-    def _search_credentials(self, terms: list[int], search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
+    # def search(
+    #     self, search_type: SearchTypes, terms: list, search_filter: Optional[ACSFilter] = None
+    # ) -> ACSRequestResponse:
+    #     match search_type:
+    #         case SearchTypes.PERSONNEL.value:
+    #             self.logger.info("Searching for personnel")
+    #             return self._search_people(terms, search_filter)
+    #         case SearchTypes.CLEARANCE.value:
+    #             self.logger.info("Searching for clearances")
+    #             return self._search_clearances(terms, search_filter)
+    #         case SearchTypes.CREDENTIAL.value:
+    #             self.logger.info("Searching for credentials")
+    #             return self.credential.search(terms)
+    #         case _:
+    #             raise ValueError(f"Invalid search type: {search_type}")
+
+
+class CCurePersonnel(CcureACS):
+    def __init__(self, connection: Optional[CcureConnection] = None):
+        super().__init__(connection)
+        self.request_options = {
+            "TypeFullName": "Personnel",
+            "pageSize": self.connection.config.page_size,
+            "pageNumber": 1,
+        }
+        self.search_filter = PersonnelFilter()
+
+    def search(self, terms: list, search_filter: PersonnelFilter = None) -> ACSRequestResponse:
+        self.logger.info("Searching for personnel")
+        if search_filter:
+            self.search_filter = search_filter
+        request_json = {
+            "DisplayProperties": self.search_filter.display_properties,
+            "WhereClause": self.search_filter.filter(terms),
+        }
+        request_json.update(self.request_options)
+        if not self.search_filter.display_properties:
+            del request_json["DisplayProperties"]
+
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
+                request_json=request_json,
+                headers=self.connection.headers,
+            ),
+        )
+
+    def count(self) -> int:
+        self.request_options["pageSize"] = 0
+        self.request_options["CountOnly"] = True
+        self.request_options["WhereClause"] = ""
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
+                request_json=self.request_options,
+                headers=self.connection.headers,
+            ),
+        ).json
+
+    def update(self, record_id: str, update_data: dict) -> ACSRequestResponse:
+        pass
+
+    def create(self, create_data: dict) -> ACSRequestResponse:
+        pass
+
+    def delete(self, record_id: str) -> ACSRequestResponse:
+        pass
+
+
+class CCureClearance(CcureACS):
+    def __init__(self, connection: Optional[CcureConnection] = None):
+        super().__init__(connection)
+        self.request_options = {
+            "partitionList": [],
+            "pageSize": self.connection.config.page_size,
+            "pageNumber": 1,
+            "sortColumnName": "",
+            "whereArgList": [],
+            "propertyList": ["Name"],
+            "explicitPropertyList": [],
+        }
+        self.search_filter = ClearanceFilter()
+
+    def search(self, terms: str, search_filter: ClearanceFilter = None) -> ACSRequestResponse:
+        self.logger.info("Searching for clearances")
+        if search_filter:
+            self.search_filter = search_filter
+        request_json = {
+            "whereClause": self.search_filter.filter(terms),
+        }
+        request_json.update(self.request_options)
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.connection.config.base_url
+                + self.connection.config.endpoints.CLEARANCES_FOR_ASSIGNMENT,
+                request_json=request_json,
+                headers=self.connection.headers,
+            ),
+        )
+
+    def count(self) -> int:
+        request_options = {}
+        request_options["TypeFullName"] = "Clearance"
+        request_options["pageSize"] = 0
+        request_options["pageNumber"] = 1
+        request_options["CountOnly"] = True
+        request_options["WhereClause"] = ""
+
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
+                request_json=request_options,
+                headers=self.connection.headers,
+            ),
+        ).json
+
+    def update(self, record_id: str, update_data: dict) -> ACSRequestResponse:
+        pass
+
+    def create(self, create_data: dict) -> ACSRequestResponse:
+        pass
+
+    def delete(self, record_id: str) -> ACSRequestResponse:
+        pass
+
+
+class CCureCredential(CcureACS):
+    def __init__(self, connection: Optional[CcureConnection] = None):
+        super().__init__(connection)
+        self.request_options = {
+            "partitionList": [],
+            "pageSize": self.connection.config.page_size,
+            "pageNumber": 1,
+            "sortColumnName": "",
+            "whereArgList": [],
+            "propertyList": ["Name"],
+            "explicitPropertyList": [],
+        }
+
+    def search(self, terms: list[int]) -> ACSRequestResponse:
+        self.logger.info("Searching for credentials##############################################")
         if terms:
             # return credentials associated with all given personnel
             result = []
             for person_object_id in terms:
+                print(self.connection.config.base_url)
+                print(self.connection.config.endpoints.SEARCH_CREDENTIALS)
+                print({"objId": person_object_id})
                 response = self.connection.request(
                     ACSRequestMethod.POST,
                     request_data=ACSRequestData(
                         url=self.connection.config.base_url
                         + self.connection.config.endpoints.SEARCH_CREDENTIALS,
-                        params={"objId": person_object_id}
-                    ),
-                    headers=self.connection.headers
+                        params={"objId": person_object_id},
+                        headers=self.connection.headers
+                    )
                 )
                 result.extend(response.json[1:])
             return result
@@ -249,23 +407,26 @@ class CcureACS(AccessControlSystem):
                 ACSRequestMethod.GET,
                 request_data=ACSRequestData(
                     url=self.connection.config.base_url
-                    + self.connection.config.endpoints.GET_CREDENTIALS
-                ),
-                headers=self.connection.headers
+                    + self.connection.config.endpoints.GET_CREDENTIALS,
+                    headers=self.connection.headers
+                )
             ).json[1:]
 
-    def search(
-        self, search_type: SearchTypes, terms: list, search_filter: Optional[ACSFilter] = None
-    ) -> ACSRequestResponse:
-        match search_type:
-            case SearchTypes.PERSONNEL.value:
-                self.logger.info("Searching for personnel")
-                return self._search_people(terms, search_filter)
-            case SearchTypes.CLEARANCE.value:
-                self.logger.info("Searching for clearances")
-                return self._search_clearances(terms, search_filter)
-            case SearchTypes.CREDENTIAL.value:
-                self.logger.info("Searching for credentials")
-                return self._search_credentials(terms, search_filter)
-            case _:
-                raise ValueError(f"Invalid search type: {search_type}")
+    def count(self) -> int:
+        response = self.connection.request(
+            ACSRequestMethod.GET,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.GET_CREDENTIALS,
+                headers=self.connection.headers,
+            ),
+        ).json
+        return response[0]["TotalRowsInAllPages"]
+
+    def update(self, record_id: str, update_data: dict) -> ACSRequestResponse:
+        pass
+
+    def create(self, create_data: dict) -> ACSRequestResponse:
+        pass
+
+    def delete(self, record_id: str) -> ACSRequestResponse:
+        pass
