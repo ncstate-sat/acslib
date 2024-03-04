@@ -13,7 +13,7 @@ from acslib.base import (
 from acslib.base.connection import ACSRequestMethod
 from acslib.base.search import ACSFilter
 from acslib.ccure.config import CcureConfigFactory
-from acslib.ccure.search import PersonnelFilter, ClearanceFilter, SearchTypes, FUZZ
+from acslib.ccure.search import PersonnelFilter, ClearanceFilter
 
 
 logger = logging.getLogger(__name__)
