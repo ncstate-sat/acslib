@@ -18,6 +18,7 @@ class V2Endpoints:
     DISABLE = "/victorwebservice/api/v2/objects/SetProperty"
     SEARCH_CREDENTIALS = "/victorWebService/api/Objects/GetCredential"
     GET_CREDENTIALS = "/victorwebservice/api/v2/Credentials"
+    DELETE_CREDENTIAL = "/victorwebservice/api/v2/Credentials/{_id}"
 
 
 # class FindObjsWithCriteria(CcureACS):

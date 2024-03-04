@@ -19,13 +19,6 @@ from acslib.ccure.search import PersonnelFilter, ClearanceFilter, SearchTypes, F
 logger = logging.getLogger(__name__)
 
 
-class CcureAPI:
-    def __init__(self):
-        self.personnel = CCurePersonnel()
-        self.clearance = CCureClearance()
-        self.credential = CCureCredential()
-
-
 class CcureConnection(ACSConnection):
     def __init__(self, **kwargs):
         """
@@ -163,6 +156,13 @@ class CcureConnection(ACSConnection):
             self.logger.debug(f"CCure app server version: {response.get('appServerVersion')}")
         except ACSRequestException as e:
             self.logger.debug(f"Could not get CCure api version number: {e}")
+
+
+class CcureAPI:
+    def __init__(self, connection: Optional[CcureConnection] = None):
+        self.personnel = CCurePersonnel(connection)
+        self.clearance = CCureClearance(connection)
+        self.credential = CCureCredential(connection)
 
 
 class CcureACS(AccessControlSystem):
@@ -382,14 +382,11 @@ class CCureCredential(CcureACS):
         }
 
     def search(self, terms: list[int]) -> ACSRequestResponse:
-        self.logger.info("Searching for credentials##############################################")
+        self.logger.info("Searching for credentials")
         if terms:
             # return credentials associated with all given personnel
             result = []
             for person_object_id in terms:
-                print(self.connection.config.base_url)
-                print(self.connection.config.endpoints.SEARCH_CREDENTIALS)
-                print({"objId": person_object_id})
                 response = self.connection.request(
                     ACSRequestMethod.POST,
                     request_data=ACSRequestData(
@@ -417,7 +414,7 @@ class CCureCredential(CcureACS):
             ACSRequestMethod.GET,
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.GET_CREDENTIALS,
-                headers=self.connection.headers,
+                headers=self.connection.headers
             ),
         ).json
         return response[0]["TotalRowsInAllPages"]
@@ -428,5 +425,13 @@ class CCureCredential(CcureACS):
     def create(self, create_data: dict) -> ACSRequestResponse:
         pass
 
-    def delete(self, record_id: str) -> ACSRequestResponse:
-        pass
+    def delete(self, record_id: int) -> ACSRequestResponse:
+        # NOTE This hasn't been tested yet. Don't test until we know how to make new credentials
+        return self.connection.request(
+            ACSRequestMethod.DELETE,
+            request_data=ACSRequestData(
+                url = self.config.base_url
+                + self.config.endpoints.DELETE_CREDENTIAL.format(_id=record_id),
+                headers=self.connection.headers
+            )
+        )
