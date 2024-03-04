@@ -176,9 +176,6 @@ class CcureACS(AccessControlSystem):
         self.logger = self.connection.logger
         self.request_options = {}
         self.search_filter = None
-        # self.personnel = CCurePersonnel(self.connection)
-        # self.clearance = CCureClearance(self.connection)
-        # self.credential = CCureCredential(self.connection)
 
     @property
     def config(self):
@@ -238,22 +235,6 @@ class CcureACS(AccessControlSystem):
 
         return response
 
-    # def search(
-    #     self, search_type: SearchTypes, terms: list, search_filter: Optional[ACSFilter] = None
-    # ) -> ACSRequestResponse:
-    #     match search_type:
-    #         case SearchTypes.PERSONNEL.value:
-    #             self.logger.info("Searching for personnel")
-    #             return self._search_people(terms, search_filter)
-    #         case SearchTypes.CLEARANCE.value:
-    #             self.logger.info("Searching for clearances")
-    #             return self._search_clearances(terms, search_filter)
-    #         case SearchTypes.CREDENTIAL.value:
-    #             self.logger.info("Searching for credentials")
-    #             return self.credential.search(terms)
-    #         case _:
-    #             raise ValueError(f"Invalid search type: {search_type}")
-
 
 class CCurePersonnel(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
@@ -284,7 +265,7 @@ class CCurePersonnel(CcureACS):
                 request_json=request_json,
                 headers=self.connection.headers,
             ),
-        )
+        ).json
 
     def count(self) -> int:
         self.request_options["pageSize"] = 0
@@ -339,7 +320,7 @@ class CCureClearance(CcureACS):
                 request_json=request_json,
                 headers=self.connection.headers,
             ),
-        )
+        ).json[1:]
 
     def count(self) -> int:
         request_options = {}
@@ -381,7 +362,7 @@ class CCureCredential(CcureACS):
             "explicitPropertyList": [],
         }
 
-    def search(self, terms: list[int]) -> ACSRequestResponse:
+    def search(self, terms: Optional[list[int]] = None) -> ACSRequestResponse:
         self.logger.info("Searching for credentials")
         if terms:
             # return credentials associated with all given personnel

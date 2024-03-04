@@ -1,8 +1,5 @@
 from dataclasses import dataclass
 
-# from acslib.ccure.base import CcureACS
-# from acslib.base.connection import ACSRequestData
-
 
 @dataclass
 class V2Endpoints:
@@ -19,12 +16,3 @@ class V2Endpoints:
     SEARCH_CREDENTIALS = "/victorWebService/api/Objects/GetCredential"
     GET_CREDENTIALS = "/victorwebservice/api/v2/Credentials"
     DELETE_CREDENTIAL = "/victorwebservice/api/v2/Credentials/{_id}"
-
-
-# class FindObjsWithCriteria(CcureACS):
-#     def __init__(self, connection, **kwargs):
-#         super().__init__(connection)
-#         self.type_full_name = kwargs.get("type_full_name")
-#         self.page_size = kwargs.get("page_size", self.connection.config.page_size)
-#         self.page_number = kwargs.get("page_number", 1)
-#         self.where_clause = kwargs.get("where_clause", "")

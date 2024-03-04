@@ -1,10 +1,9 @@
-import json
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional
 
 import requests
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from acslib.base import status
 

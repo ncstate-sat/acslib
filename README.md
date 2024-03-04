@@ -32,29 +32,23 @@ interface for interacting with them.
 ### Find a person by name
 
 ```python
-from acslib.ccure.base import CcureConnection
-from acslib.ccure import CCurePersonnel, PersonnelFilter
+import acslib
 
-ccure_connection = CcureConnection()
-cc_personnel = CCurePersonnel(ccure_connection)
-
-search = PersonnelFilter()
-response = cc_personnel.search(terms="Roddy Piper".split(), search_filter=search)
+ccure_api = acslib.CcureAPI()
+response = ccure_api.personnel.search(terms="Roddy Piper".split())
 ```
 
 ### Find a person by custom field
 
 ```python
-from acslib.ccure.base import CcureConnection
-from acslib.ccure import CCurePersonnel, PersonnelFilter
-from acslib.ccure.search import FUZZ
+import acslib
+from acslib.ccure.search import PersonnelFilter, FUZZ
 
-ccure_connection = CcureConnection()
-cc_personnel = CCurePersonnel(ccure_connection)
-
-search = PersonnelFilter()
-search.filter_fields = {"Text1": FUZZ}
-response = cc_personnel.search(terms=["PER0892347"], search_filter=search)
+ccure_api = acslib.CcureAPI()
+response = ccure_api.personnel.search(
+    terms=["PER0892347"],
+    search_filter=PersonnelFilter(lookups={"Text1": FUZZ})
+)
 ```
 
 ### Find a Clearance by name
@@ -62,8 +56,8 @@ response = cc_personnel.search(terms=["PER0892347"], search_filter=search)
 ```python
 import acslib
 
-ccure_acs = acslib.CcureACS()
-response = ccure_acs.search(search_type="clearance", terms=["suite", "door"])
+ccure_api = acslib.CcureAPI()
+response = ccure_api.clearance.search(terms=["suite", "door"])
 ```
 
 ### Find a Clearance by other field
@@ -73,10 +67,28 @@ import acslib
 from acslib.ccure.search import ClearanceFilter, NFUZZ
 
 # search by ObjectID
-ccure_acs = acslib.CcureACS()
-response = ccure_acs.search(
-    search_type="clearance",
+ccure_api = acslib.CcureAPI()
+response = ccure_api.clearance.search(
     terms=["8897"],
     search_filter=ClearanceFilter(lookups={"ObjectID": NFUZZ})
 )
+```
+
+### Find all credentials
+
+```python
+import acslib
+
+ccure_api = acs.CcureAPI()
+response = ccure_api.credential.search()
+```
+
+### Find a credential by personnel ID
+
+```python
+import acslib
+
+# find all credentials associated with either of two people:
+ccure_api = acslib.CcureAPI()
+response = ccure_api.credential.search(terms=[5001, 5003])
 ```
