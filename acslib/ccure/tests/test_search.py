@@ -31,12 +31,12 @@ def test_default_instance():
 
 def test_custom_instance():
     filter = PersonnelFilter(
-        lookups=[("Text1", NFUZZ), ("Tex14", NFUZZ)],
+        lookups={"Text1": NFUZZ, "Tex14": NFUZZ},
         outer_bool=BooleanOperators.OR,
         inner_bool=BooleanOperators.AND,
         term_operator=TermOperators.EQUALS,
     )
-    assert filter.filter_fields == [("Text1", NFUZZ), ("Tex14", NFUZZ)]
+    assert filter.filter_fields == {"Text1": NFUZZ, "Tex14": NFUZZ}
     assert filter.outer_bool == "OR"
     assert filter.inner_bool == "AND"
     assert filter.term_operator == "="
