@@ -13,6 +13,5 @@ class V2Endpoints:
     KEEPALIVE = "/victorwebservice/api/v2/session/keepalive"
     VERSIONS = "/victorwebservice/api/Generic/Versions"
     DISABLE = "/victorwebservice/api/v2/objects/SetProperty"
-    SEARCH_CREDENTIALS = "/victorWebService/api/Objects/GetCredential"
     GET_CREDENTIALS = "/victorwebservice/api/v2/Credentials"
     DELETE_CREDENTIAL = "/victorwebservice/api/v2/Credentials/{_id}"

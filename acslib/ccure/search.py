@@ -127,3 +127,6 @@ class ClearanceFilter(BaseCcureFilter):
         if not isinstance(search, list):
             raise TypeError("Search must be a list of strings")
         return self.outer_bool.join(self._compile_term(term) for term in search)
+
+
+# TODO credential

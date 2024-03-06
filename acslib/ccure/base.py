@@ -182,58 +182,58 @@ class CcureACS(AccessControlSystem):
         """."""
         return self.connection.config
 
-    def _search_people(self, terms: list, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
-        if not search_filter:
-            search_filter = PersonnelFilter()
-        request_json = {
-            "TypeFullName": "Personnel",
-            "DisplayProperties": search_filter.display_properties,
-            "pageSize": self.connection.config.page_size,
-            "pageNumber": 1,
-            "WhereClause": search_filter.filter(terms),
-        }
-        if not search_filter.display_properties:
-            del request_json["DisplayProperties"]
+    # def _search_people(self, terms: list, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
+    #     if not search_filter:
+    #         search_filter = PersonnelFilter()
+    #     request_json = {
+    #         "TypeFullName": "Personnel",
+    #         "DisplayProperties": search_filter.display_properties,
+    #         "pageSize": self.connection.config.page_size,
+    #         "pageNumber": 1,
+    #         "WhereClause": search_filter.filter(terms),
+    #     }
+    #     if not search_filter.display_properties:
+    #         del request_json["DisplayProperties"]
 
-        return self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.connection.config.base_url
-                + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
-                request_json=request_json,
-                headers=self.connection.headers,
-            ),
-        )
+    #     return self.connection.request(
+    #         ACSRequestMethod.POST,
+    #         request_data=ACSRequestData(
+    #             url=self.connection.config.base_url
+    #             + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
+    #             request_json=request_json,
+    #             headers=self.connection.headers,
+    #         ),
+    #     )
 
-    def _search_clearances(self, terms: list, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
-        if not search_filter:
-            search_filter = ClearanceFilter()
-        request_json = {
-            "partitionList": [],
-            "propertyList": search_filter.display_properties,
-            "pageSize": self.connection.config.page_size,
-            "pageNumber": 1,
-            "whereClause": search_filter.filter(terms),
-            "sortColumnName": "",
-            "whereArgList": [],
-            "explicitPropertyList": [],
-        }
-        if not search_filter.display_properties:
-            del request_json["DisplayProperties"]
+    # def _search_clearances(self, terms: list, search_filter: Optional[ACSFilter] = None) -> ACSRequestResponse:
+    #     if not search_filter:
+    #         search_filter = ClearanceFilter()
+    #     request_json = {
+    #         "partitionList": [],
+    #         "propertyList": search_filter.display_properties,
+    #         "pageSize": self.connection.config.page_size,
+    #         "pageNumber": 1,
+    #         "whereClause": search_filter.filter(terms),
+    #         "sortColumnName": "",
+    #         "whereArgList": [],
+    #         "explicitPropertyList": [],
+    #     }
+    #     if not search_filter.display_properties:
+    #         del request_json["DisplayProperties"]
 
-        response = self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.connection.config.base_url
-                + self.connection.config.endpoints.CLEARANCES_FOR_ASSIGNMENT,
-                request_json=request_json,
-                headers=self.connection.headers,
-            ),
-        )
-        if response.json:
-            response.json = response.json[1:]
+    #     response = self.connection.request(
+    #         ACSRequestMethod.POST,
+    #         request_data=ACSRequestData(
+    #             url=self.connection.config.base_url
+    #             + self.connection.config.endpoints.CLEARANCES_FOR_ASSIGNMENT,
+    #             request_json=request_json,
+    #             headers=self.connection.headers,
+    #         ),
+    #     )
+    #     if response.json:
+    #         response.json = response.json[1:]
 
-        return response
+    #     return response
 
 
 class CCurePersonnel(CcureACS):
@@ -372,12 +372,17 @@ class CCureCredential(CcureACS):
                     ACSRequestMethod.POST,
                     request_data=ACSRequestData(
                         url=self.connection.config.base_url
-                        + self.connection.config.endpoints.SEARCH_CREDENTIALS,
-                        params={"objId": person_object_id},
+                        + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
+                        request_json={
+                            "TypeFullName": "SoftwareHouse.NextGen.Common.SecurityObjects.Credential",
+                            "pageSize": 100,
+                            "pageNumber": 1,
+                            "WhereClause": f"PersonnelID = {person_object_id}"
+                        },
                         headers=self.connection.headers
                     )
                 )
-                result.extend(response.json[1:])
+                result.extend(response.json)
             return result
         else:
             # return all credentials
