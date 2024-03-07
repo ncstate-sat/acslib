@@ -79,6 +79,7 @@ class PersonnelFilter(BaseCcureFilter):
     :param outer_bool: Boolean operator to use between search terms
     :param inner_bool: Boolean operator to use between lookups
     :param term_operator: Term operator to use between field and a search term
+    :param display_properties: List of properties from CCure to be included in the CCure response
     :attribute
     """
 
@@ -88,12 +89,13 @@ class PersonnelFilter(BaseCcureFilter):
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
+        display_properties: list[str] = ["FirstName", "MiddleName", "LastName", "ObjectID"]
     ):
         self.filter_fields = lookups if lookups else PERSONNEL_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
-        self.display_properties = ["FirstName", "MiddleName", "LastName", "ObjectID"]
+        self.display_properties = display_properties
 
     def filter(self, search: list[str]) -> str:
         if not isinstance(search, list):
@@ -107,6 +109,7 @@ class ClearanceFilter(BaseCcureFilter):
     :param outer_bool: Boolean operator to use between search terms
     :param inner_bool: Boolean operator to use between lookups
     :param term_operator: Term operator to use between field and a search term
+    :param display_properties: List of properties from CCure to be included in the CCure response
     :attribute
     """
 
@@ -116,13 +119,13 @@ class ClearanceFilter(BaseCcureFilter):
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
+        display_properties: list[str] = ["Name"]
     ):
         self.filter_fields = lookups if lookups else CLEARANCE_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
-        # List of properties from CCURE to be included in the CCURE response
-        self.display_properties = ["Name"]
+        self.display_properties = display_properties
 
     def filter(self, search: list[str]) -> str:
         if not isinstance(search, list):
@@ -136,6 +139,7 @@ class CredentialFilter(BaseCcureFilter):
     :param outer_bool: Boolean operator to use between search terms
     :param inner_bool: Boolean operator to use between lookups
     :param term_operator: Term operator to use between field and a search term
+    :param display_properties: List of properties from CCure to be included in the CCure response
     :attribute
     """
 
@@ -145,11 +149,13 @@ class CredentialFilter(BaseCcureFilter):
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
+        display_properties: list[str] = ["Name"]
     ):
         self.filter_fields = lookups if lookups else CREDENTIAL_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
+        self.display_properties = display_properties
 
     def filter(self, search: list) -> str:
         if not isinstance(search, list):
