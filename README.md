@@ -35,7 +35,7 @@ interface for interacting with them.
 import acslib
 
 ccure_api = acslib.CcureAPI()
-response = ccure_api.personnel.search(terms="Roddy Piper".split())
+response = ccure_api.personnel.search("Roddy Piper".split())
 ```
 
 ### Find a person by custom field
@@ -45,10 +45,8 @@ import acslib
 from acslib.ccure.search import PersonnelFilter, FUZZ
 
 ccure_api = acslib.CcureAPI()
-response = ccure_api.personnel.search(
-    terms=["PER0892347"],
-    search_filter=PersonnelFilter(lookups={"Text1": FUZZ})
-)
+search_filter = PersonnelFilter(lookups={"Text1": FUZZ})
+response = ccure_api.personnel.search(["PER0892347"], search_filter=search_filter)
 ```
 
 ### Find a Clearance by name
@@ -57,7 +55,7 @@ response = ccure_api.personnel.search(
 import acslib
 
 ccure_api = acslib.CcureAPI()
-response = ccure_api.clearance.search(terms=["suite", "door"])
+response = ccure_api.clearance.search(["suite", "door"])
 ```
 
 ### Find a Clearance by other field
@@ -68,10 +66,8 @@ from acslib.ccure.search import ClearanceFilter, NFUZZ
 
 # search by ObjectID
 ccure_api = acslib.CcureAPI()
-response = ccure_api.clearance.search(
-    terms=["8897"],
-    search_filter=ClearanceFilter(lookups={"ObjectID": NFUZZ})
-)
+search_filter = ClearanceFilter(lookups={"ObjectID": NFUZZ})
+response = ccure_api.clearance.search([8897], search_filter=search_filter)
 ```
 
 ### Find all credentials
@@ -83,12 +79,24 @@ ccure_api = acs.CcureAPI()
 response = ccure_api.credential.search()
 ```
 
-### Find a credential by personnel ID
+### Find a credential by name
 
 ```python
 import acslib
 
-# find all credentials associated with either of two people:
+# fuzzy search by name
 ccure_api = acslib.CcureAPI()
-response = ccure_api.credential.search(terms=[5001, 5003])
+response = ccure_api.credential.search(["charles", "barkley"])
+```
+
+### Find a credential by other field
+
+```python
+import acslib
+from acslib.ccure.search import CredentialFilter, NFUZZ
+
+# search by ObjectID
+ccure_api = acslib.CcureAPI()
+search_filter = CredentialFilter(lookups={"ObjectID": NFUZZ})
+response = ccure_api.clearance.search([5001], search_filter=search_filter)
 ```
