@@ -1,10 +1,11 @@
 from typing import Optional
 
-from acslib.base import ACSRequestData, ACSRequestResponse
-from acslib.base.connection import ACSRequestMethod
+from acslib.base import ACSRequestData, ACSRequestResponse, ACSRequestException, status
+from acslib.base.connection import ACSRequestMethod, ACSConnection
 from acslib.ccure.base import CcureACS
 from acslib.ccure.connection import CcureConnection
 from acslib.ccure.search import PersonnelFilter, ClearanceFilter, CredentialFilter
+from acslib.ccure.types import CredentialCreateData
 
 
 class CcureAPI:
@@ -125,7 +126,11 @@ class CCureCredential(CcureACS):
         super().__init__(connection)
         self.search_filter = CredentialFilter()
 
-    def search(self, terms: Optional[list] = None, search_filter: Optional[CredentialFilter] = None) -> ACSRequestResponse:
+    def search(
+            self,
+            terms: Optional[list] = None,
+            search_filter: Optional[CredentialFilter] = None
+    ) -> ACSRequestResponse:
         self.logger.info("Searching for credentials")
         if terms:
             search_filter = search_filter or self.search_filter
@@ -168,10 +173,40 @@ class CCureCredential(CcureACS):
         return response[0]["TotalRowsInAllPages"]
 
     def update(self, record_id: str, update_data: dict) -> ACSRequestResponse:
-        pass
+        raise ACSRequestException(
+            status.HTTP_501_NOT_IMPLEMENTED,
+            "`CCureCredential.update` is not implemented. Use `delete` then `create` instead."
+        )
 
-    def create(self, create_data: dict) -> ACSRequestResponse:
-        pass
+    def create(self, personnel_id: int, create_data: CredentialCreateData) -> ACSRequestResponse:
+        """
+        Create a new credential object associated with a personnel object
+
+        create_data properties:
+            - `CHUID` is required.
+            - `Name` has no effect on the new credential object.
+            - `FacilityCode` defaults to 0.
+            - If `CardNumber` isn't present in create_data, CHUID will be saved as 0 regardless
+            of the `CHUID` value in create_data.
+        """
+        request_data = {
+            "type": "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel",
+            "ID": personnel_id,
+            "Children": [{
+                "Type": "SoftwareHouse.NextGen.Common.SecurityObjects.Credential",
+                "PropertyNames": list(create_data.keys()),
+                "PropertyValues": list(create_data.values())
+            }]
+        }
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
+                data=ACSConnection.encode_data(request_data),
+                headers=self.connection.headers
+                | {"Content-Type": "application/x-www-form-urlencoded"}
+            )
+        )
 
     def delete(self, record_id: int) -> ACSRequestResponse:
         return self.connection.request(

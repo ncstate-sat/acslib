@@ -54,7 +54,7 @@ class ACSRequestData(BaseModel):
     url: str
     params: Optional[dict] = None
     headers: Optional[dict] = None
-    data: Optional[dict] = None
+    data: Optional[dict | str] = None
     request_json: Optional[dict] = None
 
 
@@ -81,7 +81,7 @@ class ACSConnection(ABC):
         pass
 
     @staticmethod
-    def _encode_data(data: dict) -> str:
+    def encode_data(data: dict) -> str:
         """
         Encode a dictionary of form data as a string for requests
 
@@ -137,16 +137,15 @@ class ACSConnection(ABC):
         Parameters:
             requests_method: A method from the requests module. requests.get, requests.post, etc
             request_data: Data used as kwargs for the requests_method
-            timeout: Maximum time to wait for a server response, in seconds
 
         Returns: An object with status_code, json, and headers attributes
         """
 
         try:
-            # remove request_data_map properties with None values
             request_data_map = dict(request_data)
             request_data_map["json"] = request_data_map.pop("request_json", None)
             request_data_map["data"] = request_data_map.get("data", {})
+            # remove request_data_map properties with None values
             request_data_map = {k: v for k, v in request_data_map.items() if v is not None}
             response = self._make_request(requests_method, request_data_map)
         except requests.HTTPError:
