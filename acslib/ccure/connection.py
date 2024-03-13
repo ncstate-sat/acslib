@@ -31,12 +31,16 @@ class CcureConnection(ACSConnection):
         super().__init__(**kwargs)
 
     @property
-    def headers(self):
+    def base_headers(self):
         """."""
         return {
             "session-id": self.get_session_id(),
             "Access-Control-Expose-Headers": "session-id",
         }
+
+    @property
+    def header_for_form_data(self):
+        return {"Content-Type": "application/x-www-form-urlencoded"}
 
     def login(self):
         """."""
@@ -150,3 +154,45 @@ class CcureConnection(ACSConnection):
             self.logger.debug(f"CCure app server version: {response.get('appServerVersion')}")
         except ACSRequestException as e:
             self.logger.debug(f"Could not get CCure api version number: {e}")
+
+
+    @staticmethod
+    def encode_data(data: dict) -> str:
+        """
+        Encode a dictionary of form data as a string for requests
+
+        Parameters:
+            data: form data for the request
+
+        Returns: the string of encoded data
+        """
+
+        def get_form_entries(data: dict, prefix: str = "") -> list[str]:
+            """
+            Convert the data dict into a list of form entries
+
+            Parameters:
+                data: data about the new clearance assignment
+
+            Returns: list of strings representing key/value pairs
+            """
+            entries = []
+            for key, val in data.items():
+                if isinstance(val, (int, str)):
+                    if prefix:
+                        entries.append(f"{prefix}[{key}]={val}")
+                    else:
+                        entries.append(f"{key}={val}")
+                elif isinstance(val, list):
+                    for i, list_item in enumerate(val):
+                        if isinstance(list_item, dict):
+                            entries.extend(
+                                get_form_entries(data=list_item, prefix=prefix + f"{key}[{i}]")
+                            )
+                        elif prefix:
+                            entries.append(f"{prefix}[{key}][]={list_item}")
+                        else:
+                            entries.append(f"{key}[]={list_item}")
+            return entries
+
+        return "&".join(get_form_entries(data))

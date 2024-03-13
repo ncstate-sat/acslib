@@ -100,3 +100,13 @@ ccure_api = acslib.CcureAPI()
 search_filter = CredentialFilter(lookups={"ObjectID": NFUZZ})
 response = ccure_api.clearance.search([5001], search_filter=search_filter)
 ```
+
+### Update a credential
+
+```python
+import acslib
+
+# update CardInt1 for the credential with ObjectID 5001
+ccure_api = acslib.CcureAPI()
+response = ccure_api.credential.update(5001, {"CardInt1": 12345})
+```

@@ -8,6 +8,7 @@ class V2Endpoints:
     GET_ALL_WITH_CRITERIA = "/victorwebservice/api/Objects/GetAllWithCriteria"
     PERSIST_TO_CONTAINER = "/victorwebservice/api/Objects/PersistToContainer"
     REMOVE_FROM_CONTAINER = "/victorwebservice/api/Objects/RemoveFromContainer"
+    EDIT_OBJECT = "/victorwebservice/api/Objects/Put"
     LOGIN = "/victorwebservice/api/Authenticate/Login"
     LOGOUT = "/victorwebservice/api/Authenticate/Logout"
     KEEPALIVE = "/victorwebservice/api/v2/session/keepalive"

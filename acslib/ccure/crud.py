@@ -36,7 +36,7 @@ class CCurePersonnel(CcureACS):
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
                 request_json=request_json,
-                headers=self.connection.headers,
+                headers=self.connection.base_headers
             ),
         ).json
 
@@ -52,7 +52,7 @@ class CCurePersonnel(CcureACS):
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
                 request_json=request_json,
-                headers=self.connection.headers,
+                headers=self.connection.base_headers
             ),
         ).json
 
@@ -90,7 +90,7 @@ class CCureClearance(CcureACS):
                 url=self.connection.config.base_url
                 + self.connection.config.endpoints.CLEARANCES_FOR_ASSIGNMENT,
                 request_json=request_json,
-                headers=self.connection.headers
+                headers=self.connection.base_headers
             ),
         ).json[1:]
 
@@ -107,7 +107,7 @@ class CCureClearance(CcureACS):
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
                 request_json=request_options,
-                headers=self.connection.headers
+                headers=self.connection.base_headers
             ),
         ).json
 
@@ -130,7 +130,7 @@ class CCureCredential(CcureACS):
             self,
             terms: Optional[list] = None,
             search_filter: Optional[CredentialFilter] = None
-    ) -> ACSRequestResponse:
+    ) -> list:
         self.logger.info("Searching for credentials")
         if terms:
             search_filter = search_filter or self.search_filter
@@ -147,7 +147,7 @@ class CCureCredential(CcureACS):
                     url=self.connection.config.base_url
                     + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
                     request_json=request_json,
-                    headers=self.connection.headers
+                    headers=self.connection.base_headers
                 )
             )
             return response.json
@@ -158,7 +158,7 @@ class CCureCredential(CcureACS):
                 request_data=ACSRequestData(
                     url=self.connection.config.base_url
                     + self.connection.config.endpoints.GET_CREDENTIALS,
-                    headers=self.connection.headers
+                    headers=self.connection.base_headers
                 )
             ).json[1:]
 
@@ -167,15 +167,26 @@ class CCureCredential(CcureACS):
             ACSRequestMethod.GET,
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.GET_CREDENTIALS,
-                headers=self.connection.headers
+                headers=self.connection.base_headers
             ),
         ).json
         return response[0]["TotalRowsInAllPages"]
 
     def update(self, record_id: str, update_data: dict) -> ACSRequestResponse:
-        raise ACSRequestException(
-            status.HTTP_501_NOT_IMPLEMENTED,
-            "`CCureCredential.update` is not implemented. Use `delete` then `create` instead."
+        return self.connection.request(
+            ACSRequestMethod.PUT,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.EDIT_OBJECT,
+                params={
+                    "type": "SoftwareHouse.NextGen.Common.SecurityObjects.Credential",
+                    "id": record_id
+                },
+                data=self.connection.encode_data({
+                    "PropertyNames": list(update_data.keys()),
+                    "PropertyValues": list(update_data.values())
+                }),
+                headers=self.connection.base_headers | self.connection.header_for_form_data
+            )
         )
 
     def create(self, personnel_id: int, create_data: CredentialCreateData) -> ACSRequestResponse:
@@ -189,22 +200,22 @@ class CCureCredential(CcureACS):
             - If `CardNumber` isn't present in create_data, CHUID will be saved as 0 regardless
             of the `CHUID` value in create_data.
         """
+        create_data_dict = create_data.model_dump()
         request_data = {
             "type": "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel",
             "ID": personnel_id,
             "Children": [{
                 "Type": "SoftwareHouse.NextGen.Common.SecurityObjects.Credential",
-                "PropertyNames": list(create_data.keys()),
-                "PropertyValues": list(create_data.values())
+                "PropertyNames": list(create_data_dict.keys()),
+                "PropertyValues": list(create_data_dict.values())
             }]
         }
         return self.connection.request(
             ACSRequestMethod.POST,
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
-                data=ACSConnection.encode_data(request_data),
-                headers=self.connection.headers
-                | {"Content-Type": "application/x-www-form-urlencoded"}
+                data=self.connection.encode_data(request_data),
+                headers=self.connection.base_headers | self.connection.header_for_form_data
             )
         )
 
@@ -214,6 +225,6 @@ class CCureCredential(CcureACS):
             request_data=ACSRequestData(
                 url = self.config.base_url
                 + self.config.endpoints.DELETE_CREDENTIAL.format(_id=record_id),
-                headers=self.connection.headers
+                headers=self.connection.base_headers
             )
         )
