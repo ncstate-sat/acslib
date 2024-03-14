@@ -24,7 +24,7 @@ interface for interacting with them.
 
 ## Features
 
-* Currently supports Search for `Personnel` and `Clearances` in Ccure9k
+* Currently supports Search for `Personnel`, `Clearances`, and `Credentials` in Ccure9k
 * Supports search by custom fields.
 
 ## Usage
@@ -98,7 +98,7 @@ from acslib.ccure.search import CredentialFilter, NFUZZ
 # search by ObjectID
 ccure_api = acslib.CcureAPI()
 search_filter = CredentialFilter(lookups={"ObjectID": NFUZZ})
-response = ccure_api.clearance.search([5001], search_filter=search_filter)
+response = ccure_api.credential.search([5001], search_filter=search_filter)
 ```
 
 ### Update a credential
