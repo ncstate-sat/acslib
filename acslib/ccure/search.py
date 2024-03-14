@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 from acslib.base.search import ACSFilter, BooleanOperators, TermOperators
 
@@ -85,17 +86,20 @@ class PersonnelFilter(BaseCcureFilter):
 
     def __init__(
         self,
-        lookups: dict[str, callable] = {"FirstName": FUZZ, "LastName": FUZZ},
+        lookups: Optional[dict[str, callable]] = None,
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
-        display_properties: list[str] = ["FirstName", "MiddleName", "LastName", "ObjectID"]
+        display_properties: Optional[list[str]] = None
     ):
-        self.filter_fields = lookups if lookups else PERSONNEL_LOOKUP_FIELDS
+        self.filter_fields = lookups or PERSONNEL_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
-        self.display_properties = display_properties
+        if display_properties is None:
+            self.display_properties = ["FirstName", "MiddleName", "LastName", "ObjectID"]
+        else:
+            self.display_properties = display_properties
 
     def filter(self, search: list[str]) -> str:
         if not isinstance(search, list):
@@ -115,17 +119,20 @@ class ClearanceFilter(BaseCcureFilter):
 
     def __init__(
         self,
-        lookups: dict[str, callable] = {"Name": FUZZ},
+        lookups: Optional[dict[str, callable]] = None,
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
-        display_properties: list[str] = ["Name"]
+        display_properties: Optional[list[str]] = None
     ):
-        self.filter_fields = lookups if lookups else CLEARANCE_LOOKUP_FIELDS
+        self.filter_fields = lookups or CLEARANCE_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
-        self.display_properties = display_properties
+        if display_properties is None:
+            self.display_properties = ["Name"]
+        else:
+            self.display_properties = display_properties
 
     def filter(self, search: list[str]) -> str:
         if not isinstance(search, list):
@@ -145,17 +152,20 @@ class CredentialFilter(BaseCcureFilter):
 
     def __init__(
         self,
-        lookups: dict[str, callable] = {"Name": FUZZ},
+        lookups: Optional[dict[str, callable]] = None,
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
-        display_properties: list[str] = ["Name"]
+        display_properties: Optional[list[str]] = None
     ):
-        self.filter_fields = lookups if lookups else CREDENTIAL_LOOKUP_FIELDS
+        self.filter_fields = lookups or CREDENTIAL_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
-        self.display_properties = display_properties
+        if display_properties is None:
+            self.display_properties = ["Name"]
+        else:
+            self.display_properties = display_properties
 
     def filter(self, search: list) -> str:
         if not isinstance(search, list):
