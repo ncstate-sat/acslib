@@ -96,10 +96,9 @@ class PersonnelFilter(BaseCcureFilter):
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
+        self.display_properties = display_properties
         if display_properties is None:
             self.display_properties = ["FirstName", "MiddleName", "LastName", "ObjectID"]
-        else:
-            self.display_properties = display_properties
 
     def filter(self, search: list[str]) -> str:
         if not isinstance(search, list):
@@ -129,10 +128,9 @@ class ClearanceFilter(BaseCcureFilter):
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
+        self.display_properties = display_properties
         if display_properties is None:
             self.display_properties = ["Name"]
-        else:
-            self.display_properties = display_properties
 
     def filter(self, search: list[str]) -> str:
         if not isinstance(search, list):
@@ -162,10 +160,9 @@ class CredentialFilter(BaseCcureFilter):
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
+        self.display_properties = display_properties
         if display_properties is None:
             self.display_properties = ["Name"]
-        else:
-            self.display_properties = display_properties
 
     def filter(self, search: list) -> str:
         if not isinstance(search, list):
