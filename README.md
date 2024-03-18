@@ -24,7 +24,7 @@ interface for interacting with them.
 
 ## Features
 
-* Currently supports Search for `Personnel` and `Clearances` in Ccure9k
+* Currently supports Search for `Personnel`, `Clearances`, and `Credentials` in Ccure9k
 * Supports search by custom fields.
 
 ## Usage
@@ -32,29 +32,81 @@ interface for interacting with them.
 ### Find a person by name
 
 ```python
-from acslib.ccure.base import CcureConnection
-from acslib.ccure import CCurePersonnel, PersonnelFilter
+import acslib
 
-ccure_connection = CcureConnection()
-cc_personnel = CCurePersonnel(ccure_connection)
-
-search = PersonnelFilter()
-response = cc_personnel.search(terms="Roddy Piper".split(), search_filter=search)
+ccure_api = acslib.CcureAPI()
+response = ccure_api.personnel.search("Roddy Piper".split())
 ```
 
 ### Find a person by custom field
 
 ```python
-from acslib.ccure.base import CcureConnection
-from acslib.ccure import CCurePersonnel, PersonnelFilter
-from acslib.ccure.search import FUZZ
+import acslib
+from acslib.ccure.search import PersonnelFilter, FUZZ
 
-ccure_connection = CcureConnection()
-cc_personnel = CCurePersonnel(ccure_connection)
-
-search = PersonnelFilter()
-search.filter_fields = {"Text1": FUZZ}
-response = cc_personnel.search(terms=["PER0892347"], search_filter=search)
+ccure_api = acslib.CcureAPI()
+search_filter = PersonnelFilter(lookups={"Text1": FUZZ})
+response = ccure_api.personnel.search(["PER0892347"], search_filter=search_filter)
 ```
 
 ### Find a Clearance by name
+
+```python
+import acslib
+
+ccure_api = acslib.CcureAPI()
+response = ccure_api.clearance.search(["suite", "door"])
+```
+
+### Find a Clearance by other field
+
+```python
+import acslib
+from acslib.ccure.search import ClearanceFilter, NFUZZ
+
+# search by ObjectID
+ccure_api = acslib.CcureAPI()
+search_filter = ClearanceFilter(lookups={"ObjectID": NFUZZ})
+response = ccure_api.clearance.search([8897], search_filter=search_filter)
+```
+
+### Find all credentials
+
+```python
+import acslib
+
+ccure_api = acs.CcureAPI()
+response = ccure_api.credential.search()
+```
+
+### Find a credential by name
+
+```python
+import acslib
+
+# fuzzy search by name
+ccure_api = acslib.CcureAPI()
+response = ccure_api.credential.search(["charles", "barkley"])
+```
+
+### Find a credential by other field
+
+```python
+import acslib
+from acslib.ccure.search import CredentialFilter, NFUZZ
+
+# search by ObjectID
+ccure_api = acslib.CcureAPI()
+search_filter = CredentialFilter(lookups={"ObjectID": NFUZZ})
+response = ccure_api.credential.search([5001], search_filter=search_filter)
+```
+
+### Update a credential
+
+```python
+import acslib
+
+# update CardInt1 for the credential with ObjectID 5001
+ccure_api = acslib.CcureAPI()
+response = ccure_api.credential.update(5001, {"CardInt1": 12345})
+```

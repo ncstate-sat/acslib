@@ -6,28 +6,37 @@ from acslib.ccure.search import (
     LFUZZ,
     NFUZZ,
     PERSONNEL_LOOKUP_FIELDS,
+    CLEARANCE_LOOKUP_FIELDS,
     RFUZZ,
     PersonnelFilter,
+    ClearanceFilter
 )
 
 
 def test_default_instance():
-    filter = PersonnelFilter()
-    assert filter.filter_fields == PERSONNEL_LOOKUP_FIELDS
-    assert filter.outer_bool == "AND"
-    assert filter.inner_bool == "OR"
-    assert filter.term_operator == "LIKE"
-    assert filter.display_properties == ["FirstName", "MiddleName", "LastName"]
+    personnel_filter = PersonnelFilter()
+    assert personnel_filter.filter_fields == PERSONNEL_LOOKUP_FIELDS
+    assert personnel_filter.outer_bool == "AND"
+    assert personnel_filter.inner_bool == "OR"
+    assert personnel_filter.term_operator == "LIKE"
+    assert personnel_filter.display_properties == ["FirstName", "MiddleName", "LastName"]
+
+    clearance_filter = ClearanceFilter()
+    assert clearance_filter.filter_fields == CLEARANCE_LOOKUP_FIELDS
+    assert clearance_filter.outer_bool == "AND"
+    assert clearance_filter.inner_bool == "OR"
+    assert clearance_filter.term_operator == "LIKE"
+    assert clearance_filter.display_properties == ["Name"]
 
 
 def test_custom_instance():
     filter = PersonnelFilter(
-        lookups=[("Text1", NFUZZ), ("Tex14", NFUZZ)],
+        lookups={"Text1": NFUZZ, "Tex14": NFUZZ},
         outer_bool=BooleanOperators.OR,
         inner_bool=BooleanOperators.AND,
         term_operator=TermOperators.EQUALS,
     )
-    assert filter.filter_fields == [("Text1", NFUZZ), ("Tex14", NFUZZ)]
+    assert filter.filter_fields == {"Text1": NFUZZ, "Tex14": NFUZZ}
     assert filter.outer_bool == "OR"
     assert filter.inner_bool == "AND"
     assert filter.term_operator == "="

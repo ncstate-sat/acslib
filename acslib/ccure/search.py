@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Optional
 
 from acslib.base.search import ACSFilter, BooleanOperators, TermOperators
 
@@ -26,16 +27,18 @@ NFUZZ = no_fuzz
 
 PERSONNEL_LOOKUP_FIELDS = {"FirstName": FUZZ, "LastName": FUZZ}
 CLEARANCE_LOOKUP_FIELDS = {"Name": FUZZ}
+CREDENTIAL_LOOKUP_FIELDS = {"Name": FUZZ}
 
 
 class SearchTypes(Enum):
     PERSONNEL = "personnel"
     CLEARANCE = "clearance"
+    CREDENTIAL = "credential"
 
 
 class BaseCcureFilter(ACSFilter):
     """Base CCure Filter
-    :param lookups: List of tuples containing the field name and the lookup function
+    :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
     :param inner_bool: Boolean operator to use between lookups
     :param term_operator: Term operator to use between field and a search term
@@ -44,7 +47,7 @@ class BaseCcureFilter(ACSFilter):
 
     def __init__(
         self,
-        lookups: list[tuple[str, callable]] = None,
+        lookups: dict[str, callable] = None,
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
@@ -54,9 +57,9 @@ class BaseCcureFilter(ACSFilter):
         self.inner_bool = inner_bool.value
         self.term_operator = term_operator.value
         #: List of properties from CCURE to be included in the CCURE response
-        self.display_properties = ["FirstName", "MiddleName", "LastName", "ObjectID"]
+        self.display_properties = []
 
-    def _compile_term(self, term: str) -> str:
+    def _compile_term(self, term) -> str:
         """Get all parts of the query for one search term"""
         fields = [(field_name, lookup(term)) for field_name, lookup in self.filter_fields.items()]
         field_queries = [f"{field_name} {self.term_operator} '{lookup}'" for field_name, lookup in fields]
@@ -73,25 +76,29 @@ class BaseCcureFilter(ACSFilter):
 
 class PersonnelFilter(BaseCcureFilter):
     """Basic CCure Personnel Filter
-    :param lookups: List of tuples containing the field name and the lookup function
+    :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
     :param inner_bool: Boolean operator to use between lookups
     :param term_operator: Term operator to use between field and a search term
+    :param display_properties: List of properties from CCure to be included in the CCure response
     :attribute
     """
 
     def __init__(
         self,
-        lookups: dict[str, callable] = [],
+        lookups: Optional[dict[str, callable]] = None,
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
+        display_properties: Optional[list[str]] = None
     ):
-        self.filter_fields = lookups if lookups else PERSONNEL_LOOKUP_FIELDS
+        self.filter_fields = lookups or PERSONNEL_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
-        self.display_properties = ["FirstName", "MiddleName", "LastName"]
+        self.display_properties = ["FirstName", "MiddleName", "LastName", "ObjectID"]
+        if display_properties is not None:
+            self.display_properties = display_properties
 
     def filter(self, search: list[str]) -> str:
         if not isinstance(search, list):
@@ -101,28 +108,63 @@ class PersonnelFilter(BaseCcureFilter):
 
 class ClearanceFilter(BaseCcureFilter):
     """Basic CCure Clearance Filter
-    :param lookups: List of tuples containing the field name and the lookup function
+    :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
     :param inner_bool: Boolean operator to use between lookups
     :param term_operator: Term operator to use between field and a search term
+    :param display_properties: List of properties from CCure to be included in the CCure response
     :attribute
     """
 
     def __init__(
         self,
-        lookups: dict[str, callable] = [],
+        lookups: Optional[dict[str, callable]] = None,
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
+        display_properties: Optional[list[str]] = None
     ):
-        self.filter_fields = lookups if lookups else CLEARANCE_LOOKUP_FIELDS
+        self.filter_fields = lookups or CLEARANCE_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
-        # List of properties from CCURE to be included in the CCURE response
         self.display_properties = ["Name"]
+        if display_properties is not None:
+            self.display_properties = display_properties
 
     def filter(self, search: list[str]) -> str:
         if not isinstance(search, list):
             raise TypeError("Search must be a list of strings")
+        return self.outer_bool.join(self._compile_term(term) for term in search)
+
+
+class CredentialFilter(BaseCcureFilter):
+    """Basic CCure Credential Filter
+    :param lookups: Dict containing searchable field names and their lookup functions
+    :param outer_bool: Boolean operator to use between search terms
+    :param inner_bool: Boolean operator to use between lookups
+    :param term_operator: Term operator to use between field and a search term
+    :param display_properties: List of properties from CCure to be included in the CCure response
+    :attribute
+    """
+
+    def __init__(
+        self,
+        lookups: Optional[dict[str, callable]] = None,
+        outer_bool=BooleanOperators.AND,
+        inner_bool=BooleanOperators.OR,
+        term_operator=TermOperators.FUZZY,
+        display_properties: Optional[list[str]] = None
+    ):
+        self.filter_fields = lookups or CREDENTIAL_LOOKUP_FIELDS
+        self.outer_bool = f" {outer_bool.value} "
+        self.inner_bool = f" {inner_bool.value} "
+        self.term_operator = term_operator.value
+        self.display_properties = ["Name"]
+        if display_properties is not None:
+            self.display_properties = display_properties
+
+    def filter(self, search: list) -> str:
+        if not isinstance(search, list):
+            raise TypeError("`search` must be a list of search terms")
         return self.outer_bool.join(self._compile_term(term) for term in search)

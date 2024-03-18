@@ -1,10 +1,9 @@
-import json
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Optional
 
 import requests
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from acslib.base import status
 
@@ -53,9 +52,13 @@ class ACSRequestData(BaseModel):
     """Kwargs used in requests get/post/etc methods"""
 
     url: str
-    headers: Optional[dict] = None
-    data: Optional[dict] = None
+    # query params:
+    params: Optional[dict] = None
+    # body x-www-form-urlencoded data:
+    data: Optional[dict | str] = None
+    # body raw json:
     request_json: Optional[dict] = None
+    headers: Optional[dict] = None
 
 
 class ACSConnection(ABC):
@@ -80,47 +83,6 @@ class ACSConnection(ABC):
     def logout(self):
         pass
 
-    @staticmethod
-    def _encode_data(data: dict) -> str:
-        """
-        Encode a dictionary of form data as a string for requests
-
-        Parameters:
-            data: form data for the request
-
-        Returns: the string of encoded data
-        """
-
-        def get_form_entries(data: dict, prefix: str = "") -> list[str]:
-            """
-            Convert the data dict into a list of form entries
-
-            Parameters:
-                data: data about the new clearance assignment
-
-            Returns: list of strings representing key/value pairs
-            """
-            entries = []
-            for key, val in data.items():
-                if isinstance(val, (int, str)):
-                    if prefix:
-                        entries.append(f"{prefix}[{key}]={val}")
-                    else:
-                        entries.append(f"{key}={val}")
-                elif isinstance(val, list):
-                    for i, list_item in enumerate(val):
-                        if isinstance(list_item, dict):
-                            entries.extend(
-                                get_form_entries(data=list_item, prefix=prefix + f"{key}[{i}]")
-                            )
-                        elif prefix:
-                            entries.append(f"{prefix}[{key}][]={list_item}")
-                        else:
-                            entries.append(f"{key}[]={list_item}")
-            return entries
-
-        return "&".join(get_form_entries(data))
-
     def _make_request(self, requests_method: ACSRequestMethod, request_data_map: dict):
         if req := self.REQUEST_TYPE.get(requests_method):
             return req(**request_data_map, timeout=self.timeout)
@@ -137,16 +99,15 @@ class ACSConnection(ABC):
         Parameters:
             requests_method: A method from the requests module. requests.get, requests.post, etc
             request_data: Data used as kwargs for the requests_method
-            timeout: Maximum time to wait for a server response, in seconds
 
         Returns: An object with status_code, json, and headers attributes
         """
 
         try:
-            # remove request_data_map properties with None values
-            request_data_map = dict(request_data)
+            request_data_map = request_data.model_dump()
             request_data_map["json"] = request_data_map.pop("request_json", None)
             request_data_map["data"] = request_data_map.get("data", {})
+            # remove request_data_map properties with None values
             request_data_map = {k: v for k, v in request_data_map.items() if v is not None}
             response = self._make_request(requests_method, request_data_map)
         except requests.HTTPError:
