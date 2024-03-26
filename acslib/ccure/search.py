@@ -168,3 +168,35 @@ class CredentialFilter(BaseCcureFilter):
         if not isinstance(search, list):
             raise TypeError("`search` must be a list of search terms")
         return self.outer_bool.join(self._compile_term(term) for term in search)
+
+
+class ClearanceItemFilter(BaseCcureFilter):
+    """Basic CCure ClearanceItem Filter
+    :param lookups: Dict containing searchable field names and their lookup functions
+    :param outer_bool: Boolean operator to use between search terms
+    :param inner_bool: Boolean operator to use between lookups
+    :param term_operator: Term operator to use between field and a search term
+    :param display_properties: List of properties from CCure to be included in the CCure response
+    :attribute
+    """
+
+    def __init__(
+        self,
+        lookups: Optional[dict[str, callable]] = None,
+        outer_bool=BooleanOperators.AND,
+        inner_bool=BooleanOperators.OR,
+        term_operator=TermOperators.FUZZY,
+        display_properties: Optional[list[str]] = None
+    ):
+        self.filter_fields = lookups or CREDENTIAL_LOOKUP_FIELDS
+        self.outer_bool = f" {outer_bool.value} "
+        self.inner_bool = f" {inner_bool.value} "
+        self.term_operator = term_operator.value
+        self.display_properties = ["Name"]
+        if display_properties is not None:
+            self.display_properties = display_properties
+
+    def filter(self, search: list) -> str:
+        if not isinstance(search, list):
+            raise TypeError("`search` must be a list of search terms")
+        return self.outer_bool.join(self._compile_term(term) for term in search)

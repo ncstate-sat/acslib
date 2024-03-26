@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
@@ -18,3 +19,8 @@ class CredentialCreateData(BaseModel):
     Name: Optional[str] = None
 
     model_config = ConfigDict(extra="allow")
+
+
+class ClearanceItemTypes(Enum):
+    DOOR = "SoftwareHouse.NextGen.Common.SecurityObjects.Door"
+    ELEVATOR = "SoftwareHouse.NextGen.Common.SecurityObjects.Elevator"

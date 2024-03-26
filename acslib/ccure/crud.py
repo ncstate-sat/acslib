@@ -4,8 +4,13 @@ from acslib.base import ACSRequestData, ACSRequestResponse, ACSRequestException,
 from acslib.base.connection import ACSRequestMethod, ACSConnection
 from acslib.ccure.base import CcureACS
 from acslib.ccure.connection import CcureConnection
-from acslib.ccure.search import PersonnelFilter, ClearanceFilter, CredentialFilter
-from acslib.ccure.types import CredentialCreateData
+from acslib.ccure.search import (
+    PersonnelFilter,
+    ClearanceFilter,
+    CredentialFilter,
+    ClearanceItemFilter
+)
+from acslib.ccure.types import CredentialCreateData, ClearanceItemTypes
 
 
 class CcureAPI:
@@ -13,6 +18,7 @@ class CcureAPI:
         self.personnel = CCurePersonnel(connection)
         self.clearance = CCureClearance(connection)
         self.credential = CCureCredential(connection)
+        self.clearance_item = CCureClearanceItem(connection)
 
 
 class CCurePersonnel(CcureACS):
@@ -185,7 +191,7 @@ class CCureCredential(CcureACS):
                     "PropertyNames": list(update_data.keys()),
                     "PropertyValues": list(update_data.values())
                 }),
-                headers=self.connection.base_headers | self.connection.header_for_form_data
+                headers=self.connection.base_headers | self.connection.HEADER_FOR_FORM_DATA
             )
         )
 
@@ -215,7 +221,7 @@ class CCureCredential(CcureACS):
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
                 data=self.connection.encode_data(request_data),
-                headers=self.connection.base_headers | self.connection.header_for_form_data
+                headers=self.connection.base_headers | self.connection.HEADER_FOR_FORM_DATA
             )
         )
 
@@ -228,3 +234,44 @@ class CCureCredential(CcureACS):
                 headers=self.connection.base_headers
             )
         )
+
+
+class CCureClearanceItem(CcureACS):
+    def __init__(self, connection: Optional[CcureConnection] = None):
+        super().__init__(connection)
+        self.default_search_filter = ClearanceItemFilter()
+        self.item_types = ClearanceItemTypes
+
+    def search(
+        self,
+        item_type: str,
+        terms: Optional[list] = None,
+        search_filter: Optional[ClearanceItemFilter] = None
+    ) -> list:
+        self.logger.info("Searching for clearance items")
+        search_filter = search_filter or self.default_search_filter
+        request_json = {
+            "TypeFullName": item_type,
+            "pageSize": 100,
+            "pageNumber": 1,
+            "DisplayProperties": search_filter.display_properties,
+            "WhereClause": search_filter.filter(terms)
+        }
+        response = self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.connection.config.base_url
+                + self.connection.config.endpoints.GET_ALL_WITH_CRITERIA,
+                request_json=request_json,
+                headers=self.connection.base_headers
+            )
+        )
+        return response.json
+
+
+
+# TODO rename search.py. search_filters?
+# TODO fix capitalization on CCure/Ccure classes
+# TODO consistent return values. return ACSRequestResponse or just the values?
+# TODO rename other filters to default_filter []?
+# TODO remove the unused imports
