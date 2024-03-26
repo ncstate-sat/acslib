@@ -268,6 +268,59 @@ class CCureClearanceItem(CcureACS):
         )
         return response.json
 
+    def update(self, item_id: str, item_type: str, update_data: dict) -> ACSRequestResponse:
+        return self.connection.request(
+            ACSRequestMethod.PUT,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.EDIT_OBJECT,
+                params={
+                    "type": item_type,
+                    "id": item_id
+                },
+                data=self.connection.encode_data({
+                    "PropertyNames": list(update_data.keys()),
+                    "PropertyValues": list(update_data.values())
+                }),
+                headers=self.connection.base_headers | self.connection.HEADER_FOR_FORM_DATA
+            )
+        )
+
+    def create(self, personnel_id: int, create_data: CredentialCreateData) -> ACSRequestResponse:
+        """
+        Create a new clearance item object
+
+        create_data properties:
+            - `CHUID` is required.
+            - `Name` has no effect on the new credential object.
+            - `FacilityCode` defaults to 0.
+            - If `CardNumber` isn't present in create_data, CHUID will be saved as 0 regardless
+            of the `CHUID` value in create_data.
+        """
+        create_data_dict = create_data.model_dump()
+        request_data = {
+            "type": "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel",
+            "ID": personnel_id,
+            "Children": [{
+                "Type": "SoftwareHouse.NextGen.Common.SecurityObjects.Credential",
+                "PropertyNames": list(create_data_dict.keys()),
+                "PropertyValues": list(create_data_dict.values())
+            }]
+        }
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
+                data=self.connection.encode_data(request_data),
+                headers=self.connection.base_headers | self.connection.HEADER_FOR_FORM_DATA
+            )
+        )
+
+
+    def count():
+        """"""
+
+    def delete():
+        """"""
 
 
 # TODO rename search.py. search_filters?
@@ -275,3 +328,5 @@ class CCureClearanceItem(CcureACS):
 # TODO consistent return values. return ACSRequestResponse or just the values?
 # TODO rename other filters to default_filter []?
 # TODO remove the unused imports
+# TODO why doesn't create work
+# TODO do we really need two CRITERIA endpoints?
