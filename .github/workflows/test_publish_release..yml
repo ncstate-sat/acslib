@@ -17,7 +17,7 @@ env:
 jobs:
   run_tests:
     name: Run Tests
-    runs-on: runner-1
+    runs-on: ubuntu-latest
     steps:
       - name: Get Code
         uses: actions/checkout@v3
