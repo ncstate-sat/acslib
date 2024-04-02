@@ -12,7 +12,7 @@ env:
     REPO_NAME: acslib
     SLACK_UPDATES: true
     # sends notifications to the clearance slack channel
-    SLACK_CHANNEL_ID: C053DS40S22
+    SLACK_CHANNEL_ID: C062CVCCTGW
 
 jobs:
   run_tests:
