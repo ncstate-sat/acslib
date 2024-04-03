@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 import pytest
 from faker import Faker
 
-from acslib.ccure.base import CcureConnection
 from acslib.ccure.config import CcureConfigFactory
+from acslib.ccure.connection import CcureConnection
 
 fake = Faker()
 
