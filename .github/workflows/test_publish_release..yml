@@ -27,7 +27,7 @@ jobs:
       - name: Get SAT Actions
         uses: actions/checkout@v3
         with:
-          repository: SAT/sat-actions
+          repository: ncstate-sat/sat-actions
           path: sat-actions
 
       - name: Setup Python
@@ -84,7 +84,7 @@ jobs:
     # only proceed if test job ran successfully
     needs: run_tests
     if: ${{ github.event_name == 'push' }}
-    runs-on: runner-1
+    runs-on: ubuntu-latest
     env:
       FLIT_USERNAME: ${{ secrets.PYPI_USERNAME }}
       FLIT_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
@@ -121,7 +121,7 @@ jobs:
       - name: Get SAT Actions
         uses: actions/checkout@v3
         with:
-          repository: SAT/sat-actions
+          repository: ncstate-stat/sat-actions
           path: sat-actions
 
       - name: Setup Python
@@ -174,7 +174,7 @@ jobs:
     # only proceed if publish workflow ran successfully
     needs: build_and_publish
     if: ${{ github.event_name == 'push' }}
-    runs-on: runner-1
+    runs-on: ubuntu-latest
     env:
       PR_BODY: ${{ github.event.pull_request.body }}
       LATEST_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
@@ -188,7 +188,7 @@ jobs:
       - name: Get SAT Actions
         uses: actions/checkout@v3
         with:
-          repository: SAT/sat-actions
+          repository: ncstate-sat/sat-actions
           path: sat-actions
 
       - name: Retrieve current version
