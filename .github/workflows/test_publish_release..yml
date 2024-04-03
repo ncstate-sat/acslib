@@ -78,7 +78,7 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_UPDATES: ${{ github.event.inputs.slack-updates || env.SLACK_UPDATES }}
-          
+
   build_and_publish:
     name: Build and Publish
     # only proceed if test job ran successfully

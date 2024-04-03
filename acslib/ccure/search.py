@@ -62,7 +62,9 @@ class BaseCcureFilter(ACSFilter):
     def _compile_term(self, term) -> str:
         """Get all parts of the query for one search term"""
         fields = [(field_name, lookup(term)) for field_name, lookup in self.filter_fields.items()]
-        field_queries = [f"{field_name} {self.term_operator} '{lookup}'" for field_name, lookup in fields]
+        field_queries = [
+            f"{field_name} {self.term_operator} '{lookup}'" for field_name, lookup in fields
+        ]
         return f"({self.inner_bool.join(field_queries)})"
 
     def update_display_properties(self, properties: list[str]):
@@ -90,7 +92,7 @@ class PersonnelFilter(BaseCcureFilter):
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
-        display_properties: Optional[list[str]] = None
+        display_properties: Optional[list[str]] = None,
     ):
         self.filter_fields = lookups or PERSONNEL_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "
@@ -122,7 +124,7 @@ class ClearanceFilter(BaseCcureFilter):
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
-        display_properties: Optional[list[str]] = None
+        display_properties: Optional[list[str]] = None,
     ):
         self.filter_fields = lookups or CLEARANCE_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "
@@ -154,7 +156,7 @@ class CredentialFilter(BaseCcureFilter):
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
-        display_properties: Optional[list[str]] = None
+        display_properties: Optional[list[str]] = None,
     ):
         self.filter_fields = lookups or CREDENTIAL_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "

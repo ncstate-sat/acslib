@@ -2,14 +2,14 @@ import pytest
 
 from acslib.base.search import BooleanOperators, TermOperators
 from acslib.ccure.search import (
+    CLEARANCE_LOOKUP_FIELDS,
     FUZZ,
     LFUZZ,
     NFUZZ,
     PERSONNEL_LOOKUP_FIELDS,
-    CLEARANCE_LOOKUP_FIELDS,
     RFUZZ,
+    ClearanceFilter,
     PersonnelFilter,
-    ClearanceFilter
 )
 
 
