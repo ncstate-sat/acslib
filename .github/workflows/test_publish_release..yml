@@ -27,8 +27,8 @@ jobs:
       - name: Get SAT Actions
         uses: actions/checkout@v3
         with:
-          repository: ncstate-sat/sat-actions
-          path: sat-actions
+          repository: ncstate-sat/actions
+          path: actions
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -62,7 +62,7 @@ jobs:
 
       - name: Send Failure Message on Slack if Tests Fail
         if: ${{ failure() }}
-        uses: ./sat-actions/slack-updates
+        uses: ./actions/slack-updates
         with:
           channel-id: ${{ github.event.inputs.slack-channel-id || env.SLACK_CHANNEL_ID }}
           message: "The tests for `${{ env.REPO_NAME }}` have failed."
@@ -71,7 +71,7 @@ jobs:
           SLACK_UPDATES: ${{ github.event.inputs.slack-updates || env.SLACK_UPDATES }}
 
       - name: Send Success Message on Slack
-        uses: ./sat-actions/slack-updates
+        uses: ./actions/slack-updates
         with:
           channel-id: ${{ github.event.inputs.slack-channel-id || env.SLACK_CHANNEL_ID }}
           message: "The tests for `${{ env.REPO_NAME }}` have passed."
@@ -121,8 +121,8 @@ jobs:
       - name: Get SAT Actions
         uses: actions/checkout@v3
         with:
-          repository: ncstate-stat/sat-actions
-          path: sat-actions
+          repository: ncstate-sat/actions
+          path: actions
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -152,7 +152,7 @@ jobs:
 
       - name: Send Failure Message on Slack if Build/Publish Fails
         if: ${{ failure() }}
-        uses: ./sat-actions/slack-updates
+        uses: ./actions/slack-updates
         with:
           channel-id: ${{ github.event.inputs.slack-channel-id || env.SLACK_CHANNEL_ID }}
           message: "The tests for `${{ env.REPO_NAME }}` have passed, but publishing to PyPI failed."
@@ -161,7 +161,7 @@ jobs:
           SLACK_UPDATES: ${{ github.event.inputs.slack-updates || env.SLACK_UPDATES }}
 
       - name: Send Success Message on Slack
-        uses: ./sat-actions/slack-updates
+        uses: ./actions/slack-updates
         with:
           channel-id: ${{ github.event.inputs.slack-channel-id || env.SLACK_CHANNEL_ID }}
           message: "A new version of `${{ env.REPO_NAME }}` has been uploaded to PyPI."
@@ -188,8 +188,8 @@ jobs:
       - name: Get SAT Actions
         uses: actions/checkout@v3
         with:
-          repository: ncstate-sat/sat-actions
-          path: sat-actions
+          repository: ncstate-sat/actions
+          path: actions
 
       - name: Retrieve current version
         run: echo "CURRENT_VERSION=v$(grep -m 1 version pyproject.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)" >> $GITHUB_ENV
@@ -226,7 +226,7 @@ jobs:
 
       - name: Send Failure Message on Slack if Release Fails
         if: ${{ failure() }}
-        uses: ./sat-actions/slack-updates
+        uses: ./actions/slack-updates
         with:
           channel-id: ${{ github.event.inputs.slack-channel-id || env.SLACK_CHANNEL_ID }}
           message: "The new version of `${{ env.REPO_NAME }}` has been uploaded to PyPI, but the GitHub release failed."
@@ -235,7 +235,7 @@ jobs:
           SLACK_UPDATES: ${{ github.event.inputs.slack-updates || env.SLACK_UPDATES }}
 
       - name: Send Success Message on Slack
-        uses: ./sat-actions/slack-updates
+        uses: ./actions/slack-updates
         with:
           channel-id: ${{ github.event.inputs.slack-channel-id || env.SLACK_CHANNEL_ID }}
           message: "A new Github release for `${{ env.REPO_NAME }}` with version `${{ env.CURRENT_VERSION }}` has been created."
