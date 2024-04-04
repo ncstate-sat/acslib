@@ -11,8 +11,8 @@ def test_default_ccure_acs(env_config, caplog):
     """Default picks up env vars."""
     ccure = CcureACS()
     assert ccure.config.base_url == "https://example.com/ccure"
-    assert ccure.logger.name == "acslib.ccure.base"
-    assert "acslib.ccure.base" in caplog.text
+    assert ccure.logger.name == "acslib.ccure.connection"
+    assert "acslib.ccure.connection" in caplog.text
 
 
 def test_user_supplied_logger(env_config, caplog):
@@ -22,7 +22,7 @@ def test_user_supplied_logger(env_config, caplog):
     cc_conn = CcureConnection(logger=logging.getLogger("test"))
     ccure = CcureACS(connection=cc_conn)
     assert ccure.logger.name == "test"
-    assert "test:base" in caplog.text
+    assert "test:connection" in caplog.text
 
 
 def test_default_ccure_search(env_config, personnel_response, caplog):
