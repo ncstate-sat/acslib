@@ -292,8 +292,8 @@ class CcureClearanceItem(CcureACS):
 
     def update(
             self,
-            item_id: str,
             item_type: ClearanceItemTypes,
+            item_id: str,
             update_data: dict
         ) -> ACSRequestResponse:
         return self.connection.request(
