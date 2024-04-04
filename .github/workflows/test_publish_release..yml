@@ -154,6 +154,7 @@ jobs:
         run: |
           source /tmp/venv/bin/activate
           ls -la
+          git status
           flit publish
 
       - name: Send Failure Message on Slack if Build/Publish Fails
