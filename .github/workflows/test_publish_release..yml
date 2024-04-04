@@ -153,6 +153,7 @@ jobs:
       - name: Build and Publish
         run: |
           source /tmp/venv/bin/activate
+          ls -la
           flit publish
 
       - name: Send Failure Message on Slack if Build/Publish Fails
