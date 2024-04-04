@@ -4,7 +4,7 @@ from acslib.base import ACSRequestData, ACSRequestResponse, ACSRequestException,
 from acslib.base.connection import ACSRequestMethod, ACSConnection
 from acslib.ccure.base import CcureACS
 from acslib.ccure.connection import CcureConnection
-from acslib.ccure.search import (
+from acslib.ccure.search_filtering import (
     PersonnelFilter,
     ClearanceFilter,
     CredentialFilter,
@@ -328,14 +328,21 @@ class CCureClearanceItem(CcureACS):
             )
         )
 
-    def delete(self, item_id: int):
-        raise ACSRequestException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            log_message="CCureClearanceItem.delete is not implemented."
+    def delete(self, item_type: ClearanceItemTypes, item_id: int) -> ACSRequestResponse:
+        return self.connection.request(
+            ACSRequestMethod.DELETE,
+            request_data=ACSRequestData(
+                url = self.config.base_url
+                + self.config.endpoints.DELETE_OBJECT,
+                params={
+                    "type": self.type_longifier[item_type],
+                    "id": item_id
+                },
+                headers=self.connection.base_headers
+            )
         )
 
 
-# TODO rename search.py. search_filters?
 # TODO fix capitalization on CCure/Ccure classes
 # TODO consistent return values. return ACSRequestResponse or just the values?
 # TODO rename other filters to default_filter []?
