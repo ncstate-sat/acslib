@@ -10,7 +10,7 @@ from acslib.ccure.search import (
     CredentialFilter,
     ClearanceItemFilter
 )
-from acslib.ccure.types import CredentialCreateData, ClearanceItemTypes
+from acslib.ccure.types import CredentialCreateData, ClearanceItemTypes, ClearanceItemCreateData
 
 
 class CcureAPI:
@@ -307,20 +307,25 @@ class CCureClearanceItem(CcureACS):
             )
         )
 
-    def create(self, personnel_id: int, create_data: CredentialCreateData) -> ACSRequestResponse:
-        """
-        Create a new clearance item object
-
-        create_data properties:
-            - `CHUID` is required.
-            - `Name` has no effect on the new credential object.
-            - `FacilityCode` defaults to 0.
-            - If `CardNumber` isn't present in create_data, CHUID will be saved as 0 regardless
-            of the `CHUID` value in create_data.
-        """
-        raise ACSRequestException(
-            status_code=status.HTTP_501_NOT_IMPLEMENTED,
-            log_message="CCureClearanceItem.create is not implemented."
+    def create(self, item_type: ClearanceItemTypes, create_data: ClearanceItemCreateData) -> ACSRequestResponse:
+        """Create a new clearance item object"""
+        create_data_dict = create_data.model_dump()
+        request_data = {
+            "type": "SoftwareHouse.NextGen.Common.SecurityObjects.iStarController",
+            "ID": 5000,  # TODO where is this number coming from
+            "Children": [{
+                "Type": self.type_longifier[item_type],
+                "PropertyNames": list(create_data_dict.keys()),
+                "PropertyValues": list(create_data_dict.values())
+            }]
+        }
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
+                data=self.connection.encode_data(request_data),
+                headers=self.connection.base_headers | self.connection.HEADER_FOR_FORM_DATA
+            )
         )
 
     def delete(self, item_id: int):

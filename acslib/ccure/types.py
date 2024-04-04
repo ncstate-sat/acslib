@@ -24,3 +24,15 @@ class CredentialCreateData(BaseModel):
 class ClearanceItemTypes(Enum):
     DOOR = "door"
     ELEVATOR = "elevator"
+
+
+class ClearanceItemCreateData(BaseModel):
+    """
+
+    """
+    Name: str
+    Description: str
+    ParentID: int
+    ParentType: str
+    ControllerID: int
+    ControllerClassType: str
