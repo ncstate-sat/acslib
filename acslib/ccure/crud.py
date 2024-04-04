@@ -1,7 +1,7 @@
 from typing import Optional
 
-from acslib.base import ACSRequestData, ACSRequestResponse, ACSRequestException, status
-from acslib.base.connection import ACSRequestMethod, ACSConnection
+from acslib.base import ACSRequestData, ACSRequestResponse
+from acslib.base.connection import ACSRequestMethod
 from acslib.ccure.base import CcureACS
 from acslib.ccure.connection import CcureConnection
 from acslib.ccure.search_filtering import (
@@ -15,20 +15,20 @@ from acslib.ccure.types import CredentialCreateData, ClearanceItemTypes, Clearan
 
 class CcureAPI:
     def __init__(self, connection: Optional[CcureConnection] = None):
-        self.personnel = CCurePersonnel(connection)
-        self.clearance = CCureClearance(connection)
-        self.credential = CCureCredential(connection)
-        self.clearance_item = CCureClearanceItem(connection)
+        self.personnel = CcurePersonnel(connection)
+        self.clearance = CcureClearance(connection)
+        self.credential = CcureCredential(connection)
+        self.clearance_item = CcureClearanceItem(connection)
 
 
-class CCurePersonnel(CcureACS):
+class CcurePersonnel(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
-        self.search_filter = PersonnelFilter()
+        self.default_search_filter = PersonnelFilter()
 
-    def search(self, terms: list, search_filter: Optional[PersonnelFilter] = None) -> ACSRequestResponse:
+    def search(self, terms: list, search_filter: Optional[PersonnelFilter] = None) -> list:
         self.logger.info("Searching for personnel")
-        search_filter = search_filter or self.search_filter
+        search_filter = search_filter or self.default_search_filter
         request_json = {
             "TypeFullName": "Personnel",
             "pageSize": self.connection.config.page_size,
@@ -72,14 +72,14 @@ class CCurePersonnel(CcureACS):
         pass
 
 
-class CCureClearance(CcureACS):
+class CcureClearance(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
-        self.search_filter = ClearanceFilter()
+        self.default_search_filter = ClearanceFilter()
 
-    def search(self, terms: list, search_filter: Optional[ClearanceFilter] = None) -> ACSRequestResponse:
+    def search(self, terms: list, search_filter: Optional[ClearanceFilter] = None) -> list:
         self.logger.info("Searching for clearances")
-        search_filter = search_filter or self.search_filter
+        search_filter = search_filter or self.default_search_filter
         request_json = {
             "partitionList": [],
             "pageSize": self.connection.config.page_size,
@@ -127,10 +127,10 @@ class CCureClearance(CcureACS):
         pass
 
 
-class CCureCredential(CcureACS):
+class CcureCredential(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
-        self.search_filter = CredentialFilter()
+        self.default_search_filter = CredentialFilter()
 
     def search(
             self,
@@ -139,7 +139,7 @@ class CCureCredential(CcureACS):
     ) -> list:
         self.logger.info("Searching for credentials")
         if terms:
-            search_filter = search_filter or self.search_filter
+            search_filter = search_filter or self.default_search_filter
             request_json = {
                 "TypeFullName": "SoftwareHouse.NextGen.Common.SecurityObjects.Credential",
                 "pageSize": 100,
@@ -236,7 +236,7 @@ class CCureCredential(CcureACS):
         )
 
 
-class CCureClearanceItem(CcureACS):
+class CcureClearanceItem(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
         self.default_search_filter = ClearanceItemFilter()
@@ -290,7 +290,12 @@ class CCureClearanceItem(CcureACS):
         )
         return response.json
 
-    def update(self, item_id: str, item_type: ClearanceItemTypes, update_data: dict) -> ACSRequestResponse:
+    def update(
+            self,
+            item_id: str,
+            item_type: ClearanceItemTypes,
+            update_data: dict
+        ) -> ACSRequestResponse:
         return self.connection.request(
             ACSRequestMethod.PUT,
             request_data=ACSRequestData(
@@ -307,7 +312,11 @@ class CCureClearanceItem(CcureACS):
             )
         )
 
-    def create(self, item_type: ClearanceItemTypes, create_data: ClearanceItemCreateData) -> ACSRequestResponse:
+    def create(
+            self,
+            item_type: ClearanceItemTypes,
+            create_data: ClearanceItemCreateData
+        ) -> ACSRequestResponse:
         """Create a new clearance item object"""
         create_data_dict = create_data.model_dump()
         request_data = {
@@ -341,12 +350,3 @@ class CCureClearanceItem(CcureACS):
                 headers=self.connection.base_headers
             )
         )
-
-
-# TODO fix capitalization on CCure/Ccure classes
-# TODO consistent return values. return ACSRequestResponse or just the values?
-# TODO rename other filters to default_filter []?
-# TODO remove the unused imports
-# TODO why doesn't create work
-# TODO do we really need two CRITERIA endpoints?
-# TODO what's the difference between door and istar door? they both work.
