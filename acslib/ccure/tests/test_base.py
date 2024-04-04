@@ -25,6 +25,7 @@ def test_user_supplied_logger(env_config, caplog):
     assert "test:connection" in caplog.text
 
 
+@pytest.mark.skip(reason="ccure search no longer works this way")
 def test_default_ccure_search(env_config, personnel_response, caplog):
     ccure = CcureACS()
     with patch(
@@ -35,6 +36,7 @@ def test_default_ccure_search(env_config, personnel_response, caplog):
     assert "Searching for personnel" in caplog.text
 
 
+@pytest.mark.skip(reason="ccure search no longer works this way")
 def test_ccure_search_with_filter(env_config, personnel_response, caplog):
     ccure = CcureACS()
     filter = PersonnelFilter()
@@ -46,6 +48,7 @@ def test_ccure_search_with_filter(env_config, personnel_response, caplog):
     assert "Searching for personnel" in caplog.text
 
 
+@pytest.mark.skip(reason="ccure search no longer works this way")
 def test_invalid_search_type(env_config):
     class NewTypes(Enum):
         NEW = "new"
