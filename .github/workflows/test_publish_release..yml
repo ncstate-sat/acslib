@@ -4,15 +4,18 @@ on:
   # PR merges count as pushes
   push:
     branches:
-      - main
+      - automatic-release
   pull_request:
   workflow_dispatch:
 
 env:
     REPO_NAME: acslib
+    RELEASE_REPO: https://github.com/ncstate-sat/sat-utils/
     SLACK_UPDATES: true
     # sends notifications to the clearance slack channel
     SLACK_CHANNEL_ID: C062CVCCTGW
+    FLIT_USERNAME: __token__
+    FLIT_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
 jobs:
   run_tests:
@@ -45,19 +48,19 @@ jobs:
 
       - name: Setup Virtual Environment
         run: |
-          python -m venv venv
-          source venv/bin/activate
+          python -m venv /tmp/venv
+          source /tmp/venv/bin/activate
           make setup
 
       - name: Run Pre-commit
         run: |
-          source venv/bin/activate
+          source /tmp/venv/bin/activate
           pre-commit install
           pre-commit run --all
 
       - name: Run Tests
         run: |
-          source venv/bin/activate
+          source /tmp/venv/bin/activate
           pytest
 
       - name: Send Failure Message on Slack if Tests Fail
@@ -85,10 +88,9 @@ jobs:
     needs: run_tests
     if: ${{ github.event_name == 'push' }}
     runs-on: ubuntu-latest
-    env:
-      FLIT_USERNAME: ${{ secrets.PYPI_USERNAME }}
-      FLIT_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      FLIT_INDEX_URL: https://pypi.ehps.ncsu.edu
+    environment: release
+    permissions:
+      id-token: write
     steps:
       - name: Get Code
         uses: actions/checkout@v3
@@ -138,16 +140,16 @@ jobs:
             requirements-local-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-
 
       - name: Setup Virtual Environment
-        run: python -m venv venv
+        run: python -m venv /tmp/venv
 
       - name: Configure pip
         run: |
-          source venv/bin/activate
+          source /tmp/venv/bin/activate
           make setup
 
       - name: Build and Publish
         run: |
-          source venv/bin/activate
+          source /tmp/venv/bin/activate
           flit publish
 
       - name: Send Failure Message on Slack if Build/Publish Fails
@@ -222,7 +224,7 @@ jobs:
           body: |
             ## What's Changed
             ${{ env.BODY }}
-            **Full Changelog**: https://github.ncsu.edu/SAT/sat-automations/compare/${{ env.PREV_VERSION }}...${{ env.CURRENT_VERSION }}
+            **Full Changelog**: {{ env.RELEASE_REPO }}/compare/${{ env.PREV_VERSION }}...${{ env.CURRENT_VERSION }}
 
       - name: Send Failure Message on Slack if Release Fails
         if: ${{ failure() }}
