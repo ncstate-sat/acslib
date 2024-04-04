@@ -22,5 +22,5 @@ class CredentialCreateData(BaseModel):
 
 
 class ClearanceItemTypes(Enum):
-    DOOR = "SoftwareHouse.NextGen.Common.SecurityObjects.Door"
-    ELEVATOR = "SoftwareHouse.NextGen.Common.SecurityObjects.Elevator"
+    DOOR = "door"
+    ELEVATOR = "elevator"

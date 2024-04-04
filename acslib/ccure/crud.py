@@ -241,17 +241,21 @@ class CCureClearanceItem(CcureACS):
         super().__init__(connection)
         self.default_search_filter = ClearanceItemFilter()
         self.item_types = ClearanceItemTypes
+        self.type_longifier = {
+            "door": "SoftwareHouse.NextGen.Common.SecurityObjects.Door",
+            "elevator": "SoftwareHouse.NextGen.Common.SecurityObjects.Elevator"
+        }
 
     def search(
         self,
-        item_type: str,
+        item_type: ClearanceItemTypes,
         terms: Optional[list] = None,
         search_filter: Optional[ClearanceItemFilter] = None
     ) -> list:
         self.logger.info("Searching for clearance items")
         search_filter = search_filter or self.default_search_filter
         request_json = {
-            "TypeFullName": item_type,
+            "TypeFullName": self.type_longifier[item_type],
             "pageSize": 100,
             "pageNumber": 1,
             "DisplayProperties": search_filter.display_properties,
@@ -268,13 +272,31 @@ class CCureClearanceItem(CcureACS):
         )
         return response.json
 
-    def update(self, item_id: str, item_type: str, update_data: dict) -> ACSRequestResponse:
+    def count(self, item_type: ClearanceItemTypes) -> int:
+        request_json = {
+            "TypeFullName": self.type_longifier[item_type],
+            "pageSize": 0,
+            "CountOnly": True,
+            "WhereClause": ""
+        }
+        response = self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.connection.config.base_url
+                + self.connection.config.endpoints.GET_ALL_WITH_CRITERIA,
+                request_json=request_json,
+                headers=self.connection.base_headers
+            )
+        )
+        return response.json
+
+    def update(self, item_id: str, item_type: ClearanceItemTypes, update_data: dict) -> ACSRequestResponse:
         return self.connection.request(
             ACSRequestMethod.PUT,
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.EDIT_OBJECT,
                 params={
-                    "type": item_type,
+                    "type": self.type_longifier[item_type],
                     "id": item_id
                 },
                 data=self.connection.encode_data({
@@ -296,31 +318,16 @@ class CCureClearanceItem(CcureACS):
             - If `CardNumber` isn't present in create_data, CHUID will be saved as 0 regardless
             of the `CHUID` value in create_data.
         """
-        create_data_dict = create_data.model_dump()
-        request_data = {
-            "type": "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel",
-            "ID": personnel_id,
-            "Children": [{
-                "Type": "SoftwareHouse.NextGen.Common.SecurityObjects.Credential",
-                "PropertyNames": list(create_data_dict.keys()),
-                "PropertyValues": list(create_data_dict.values())
-            }]
-        }
-        return self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
-                data=self.connection.encode_data(request_data),
-                headers=self.connection.base_headers | self.connection.HEADER_FOR_FORM_DATA
-            )
+        raise ACSRequestException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            log_message="CCureClearanceItem.create is not implemented."
         )
 
-
-    def count():
-        """"""
-
-    def delete():
-        """"""
+    def delete(self, item_id: int):
+        raise ACSRequestException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            log_message="CCureClearanceItem.delete is not implemented."
+        )
 
 
 # TODO rename search.py. search_filters?
@@ -330,3 +337,4 @@ class CCureClearanceItem(CcureACS):
 # TODO remove the unused imports
 # TODO why doesn't create work
 # TODO do we really need two CRITERIA endpoints?
+# TODO what's the difference between door and istar door? they both work.
