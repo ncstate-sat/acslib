@@ -4,7 +4,7 @@ from unittest.mock import patch
 import pytest
 
 from acslib.ccure.base import CcureACS, CcureConnection
-from acslib.ccure.search_filtering import PersonnelFilter, SearchTypes
+from acslib.ccure.filters import PersonnelFilter, SearchTypes
 
 
 def test_default_ccure_acs(env_config, caplog):

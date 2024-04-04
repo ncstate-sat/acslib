@@ -27,9 +27,6 @@ class ClearanceItemTypes(Enum):
 
 
 class ClearanceItemCreateData(BaseModel):
-    """
-
-    """
     Name: str
     Description: str
     ParentID: int

@@ -39,7 +39,7 @@ class CcureConnection(ACSConnection):
         }
 
     @property
-    def HEADER_FOR_FORM_DATA(self):
+    def header_for_form_data(self):
         return {"Content-Type": "application/x-www-form-urlencoded"}
 
     def login(self):

@@ -4,7 +4,7 @@ from acslib.base import ACSRequestData, ACSRequestResponse
 from acslib.base.connection import ACSRequestMethod
 from acslib.ccure.base import CcureACS
 from acslib.ccure.connection import CcureConnection
-from acslib.ccure.search_filtering import (
+from acslib.ccure.filters import (
     PersonnelFilter,
     ClearanceFilter,
     CredentialFilter,
@@ -191,7 +191,7 @@ class CcureCredential(CcureACS):
                     "PropertyNames": list(update_data.keys()),
                     "PropertyValues": list(update_data.values())
                 }),
-                headers=self.connection.base_headers | self.connection.HEADER_FOR_FORM_DATA
+                headers=self.connection.base_headers | self.connection.header_for_form_data
             )
         )
 
@@ -221,7 +221,7 @@ class CcureCredential(CcureACS):
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
                 data=self.connection.encode_data(request_data),
-                headers=self.connection.base_headers | self.connection.HEADER_FOR_FORM_DATA
+                headers=self.connection.base_headers | self.connection.header_for_form_data
             )
         )
 
@@ -241,7 +241,7 @@ class CcureClearanceItem(CcureACS):
         super().__init__(connection)
         self.default_search_filter = ClearanceItemFilter()
         self.item_types = ClearanceItemTypes
-        self.type_longifier = {
+        self.type_map = {
             "door": "SoftwareHouse.NextGen.Common.SecurityObjects.Door",
             "elevator": "SoftwareHouse.NextGen.Common.SecurityObjects.Elevator"
         }
@@ -255,7 +255,7 @@ class CcureClearanceItem(CcureACS):
         self.logger.info("Searching for clearance items")
         search_filter = search_filter or self.default_search_filter
         request_json = {
-            "TypeFullName": self.type_longifier[item_type],
+            "TypeFullName": self.type_map[item_type],
             "pageSize": 100,
             "pageNumber": 1,
             "DisplayProperties": search_filter.display_properties,
@@ -274,7 +274,7 @@ class CcureClearanceItem(CcureACS):
 
     def count(self, item_type: ClearanceItemTypes) -> int:
         request_json = {
-            "TypeFullName": self.type_longifier[item_type],
+            "TypeFullName": self.type_map[item_type],
             "pageSize": 0,
             "CountOnly": True,
             "WhereClause": ""
@@ -301,14 +301,14 @@ class CcureClearanceItem(CcureACS):
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.EDIT_OBJECT,
                 params={
-                    "type": self.type_longifier[item_type],
+                    "type": self.type_map[item_type],
                     "id": item_id
                 },
                 data=self.connection.encode_data({
                     "PropertyNames": list(update_data.keys()),
                     "PropertyValues": list(update_data.values())
                 }),
-                headers=self.connection.base_headers | self.connection.HEADER_FOR_FORM_DATA
+                headers=self.connection.base_headers | self.connection.header_for_form_data
             )
         )
 
@@ -323,7 +323,7 @@ class CcureClearanceItem(CcureACS):
             "type": "SoftwareHouse.NextGen.Common.SecurityObjects.iStarController",
             "ID": 5000,  # TODO where is this number coming from
             "Children": [{
-                "Type": self.type_longifier[item_type],
+                "Type": self.type_map[item_type],
                 "PropertyNames": list(create_data_dict.keys()),
                 "PropertyValues": list(create_data_dict.values())
             }]
@@ -333,7 +333,7 @@ class CcureClearanceItem(CcureACS):
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
                 data=self.connection.encode_data(request_data),
-                headers=self.connection.base_headers | self.connection.HEADER_FOR_FORM_DATA
+                headers=self.connection.base_headers | self.connection.header_for_form_data
             )
         )
 
@@ -344,7 +344,7 @@ class CcureClearanceItem(CcureACS):
                 url = self.config.base_url
                 + self.config.endpoints.DELETE_OBJECT,
                 params={
-                    "type": self.type_longifier[item_type],
+                    "type": self.type_map[item_type],
                     "id": item_id
                 },
                 headers=self.connection.base_headers
