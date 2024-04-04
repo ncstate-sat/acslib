@@ -101,5 +101,7 @@ target/
 site/
 .history/
 
+# repo pulled in for CI/CD
+actions/
 
 Access Control Systems
