@@ -4,7 +4,7 @@ on:
   # PR merges count as pushes
   push:
     branches:
-      - automatic-release
+      - main
   pull_request:
   workflow_dispatch:
 
@@ -229,7 +229,7 @@ jobs:
           body: |
             ## What's Changed
             ${{ env.BODY }}
-            **Full Changelog**: {{ env.RELEASE_REPO }}/compare/${{ env.PREV_VERSION }}...${{ env.CURRENT_VERSION }}
+            **Full Changelog**: ${{ env.RELEASE_REPO }}/compare/${{ env.PREV_VERSION }}...${{ env.CURRENT_VERSION }}
 
       - name: Send Failure Message on Slack if Release Fails
         if: ${{ failure() }}
