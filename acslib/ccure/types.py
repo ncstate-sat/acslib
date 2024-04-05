@@ -21,9 +21,16 @@ class CredentialCreateData(BaseModel):
     model_config = ConfigDict(extra="allow")
 
 
-class ClearanceItemTypes(Enum):
+class ClearanceItemType(Enum):
     DOOR = "door"
     ELEVATOR = "elevator"
+
+    @property
+    def complete(self):
+        if self == self.DOOR:
+            return "SoftwareHouse.NextGen.Common.SecurityObjects.Door"
+        if self == self.ELEVATOR:
+            return "SoftwareHouse.NextGen.Common.SecurityObjects.Elevator"
 
 
 class ClearanceItemCreateData(BaseModel):
