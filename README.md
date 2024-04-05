@@ -125,39 +125,41 @@ Clearance items include "door" and "elevator."
 
 ```python
 import acslib
+from acslib.ccure.types import ClearanceItemType as cit
 
 # fuzzy search for doors by name
 ccure_api = acslib.CcureAPI()
-response = ccure_api.clearance_item.search("door", ["hall", "interior"])
+response = ccure_api.clearance_item.search(cit.DOOR, ["hall", "interior"])
 ```
 
 #### Find ClearanceItem by other field
 
 ```python
 import acslib
-from acslib.ccure.search import ClearanceItemFilter, NFUZZ
+from acslib.ccure.filters import ClearanceItemFilter, NFUZZ
+from acslib.ccure.types import ClearanceItemType as cit
 
 # search elevators by ObjectID
 ccure_api = acslib.CcureAPI()
 search_filter = ClearanceItemFilter(lookups={"ObjectID": NFUZZ})
-response = ccure_api.clearance_item.search("elevator", [5000], search_filter=search_filter)
+response = ccure_api.clearance_item.search(cit.ELEVATOR, [5000], search_filter=search_filter)
 ```
 
 #### Update ClearanceItem
 
 ```python
 import acslib
-
+from acslib.ccure.types import ClearanceItemType as cit
 # change a door's name
 ccure_api = acslib.CcureAPI()
-response = ccure_api.clearance_item.update("door", 5000, update_data={"Name": "new door name 123"})
+response = ccure_api.clearance_item.update(cit.DOOR, 5000, update_data={"Name": "new door name 123"})
 ```
 
 #### Create ClearanceItem
 
 ```python
 import acslib
-from acslib.ccure.types import ClearanceItemCreateData
+from acslib.ccure.types import ClearanceItemCreateData, ClearanceItemType as cit
 
 # create a new elevator
 ccure_api = acslib.CcureAPI()
@@ -169,15 +171,15 @@ new_elevator_data = ClearanceItemCreateData(
     ControllerID=5000,
     ControllerClassType="SoftwareHouse.NextGen.Common.SecurityObjects.iStarController"
 )
-response = ccure_api.clearance_item.create("elevator", create_data=new_elevator_data)
+response = ccure_api.clearance_item.create(cit.ELEVATOR, create_data=new_elevator_data)
 ```
 
 #### Delete ClearanceItem
 
 ```python
 import acslib
-
+from acslib.ccure.types import ClearanceItemType as cit
 # delete a door
 ccure_api = acslib.CcureAPI()
-response = ccure_api.clearance_item.delete("door", 5000)
+response = ccure_api.clearance_item.delete(cit.DOOR, 5000)
 ```
