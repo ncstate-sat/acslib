@@ -55,7 +55,7 @@ include = '\.pyi?$'
 
 [tool.ruff]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
-select = ["E", "F", "W", "I001"]
+select = ["E", "F", "W"]
 src = ["acslib"]
 ignore = ["E501", "F401"]
 fix = true
