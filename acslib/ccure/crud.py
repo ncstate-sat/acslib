@@ -24,11 +24,11 @@ class CcureAPI:
 class CcurePersonnel(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
-        self.default_search_filter = PersonnelFilter()
+        self.search_filter = PersonnelFilter()
 
     def search(self, terms: list, search_filter: Optional[PersonnelFilter] = None) -> list:
         self.logger.info("Searching for personnel")
-        search_filter = search_filter or self.default_search_filter
+        search_filter = search_filter or self.search_filter
         request_json = {
             "TypeFullName": "Personnel",
             "pageSize": self.connection.config.page_size,
@@ -75,11 +75,11 @@ class CcurePersonnel(CcureACS):
 class CcureClearance(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
-        self.default_search_filter = ClearanceFilter()
+        self.search_filter = ClearanceFilter()
 
     def search(self, terms: list, search_filter: Optional[ClearanceFilter] = None) -> list:
         self.logger.info("Searching for clearances")
-        search_filter = search_filter or self.default_search_filter
+        search_filter = search_filter or self.search_filter
         request_json = {
             "partitionList": [],
             "pageSize": self.connection.config.page_size,
@@ -130,14 +130,14 @@ class CcureClearance(CcureACS):
 class CcureCredential(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
-        self.default_search_filter = CredentialFilter()
+        self.search_filter = CredentialFilter()
 
     def search(
         self, terms: Optional[list] = None, search_filter: Optional[CredentialFilter] = None
     ) -> list:
         self.logger.info("Searching for credentials")
         if terms:
-            search_filter = search_filter or self.default_search_filter
+            search_filter = search_filter or self.search_filter
             request_json = {
                 "TypeFullName": "SoftwareHouse.NextGen.Common.SecurityObjects.Credential",
                 "pageSize": 100,
@@ -241,7 +241,7 @@ class CcureCredential(CcureACS):
 class CcureClearanceItem(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
-        self.default_search_filter = ClearanceItemFilter()
+        self.search_filter = ClearanceItemFilter()
 
     def search(
         self,
@@ -250,7 +250,7 @@ class CcureClearanceItem(CcureACS):
         search_filter: Optional[ClearanceItemFilter] = None,
     ) -> list:
         self.logger.info("Searching for clearance items")
-        search_filter = search_filter or self.default_search_filter
+        search_filter = search_filter or self.search_filter
         request_json = {
             "TypeFullName": item_type.complete,
             "pageSize": 100,
