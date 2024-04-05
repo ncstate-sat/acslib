@@ -1,6 +1,6 @@
 from abc import ABC
 
-from acslib.base.connection import ACSConnection
+from acslib.base import ACSConnection
 
 
 class AccessControlSystem(ABC):

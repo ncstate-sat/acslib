@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from acslib.base.config import ACSConfigException
+from acslib.base import ACSConfigException
 from acslib.ccure.config import CcureConfigFactory
 
 

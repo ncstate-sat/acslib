@@ -1,6 +1,6 @@
 from typing import Optional
 
-from acslib.base.acs import AccessControlSystem
+from acslib.base import AccessControlSystem
 from acslib.ccure.connection import CcureConnection
 
 

@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 import requests
 
-from acslib.base.connection import ACSRequestException
+from acslib.base import ACSRequestException
 
 
 def test_ccure_connection(ccure_connection, response_w_session):

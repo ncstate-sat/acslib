@@ -1,6 +1,7 @@
 from typing import Optional
 
-from acslib.base.connection import ACSRequestData, ACSRequestMethod, ACSRequestResponse
+from acslib.base import ACSRequestData, ACSRequestException, ACSRequestResponse, status
+from acslib.base.connection import ACSConnection, ACSRequestMethod
 from acslib.ccure.base import CcureACS
 from acslib.ccure.connection import CcureConnection
 from acslib.ccure.search import ClearanceFilter, CredentialFilter, PersonnelFilter

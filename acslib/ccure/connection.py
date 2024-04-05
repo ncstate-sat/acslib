@@ -1,14 +1,14 @@
 import logging
 from numbers import Number
 
-from acslib.base import status
-from acslib.base.connection import (
+from acslib.base import (
     ACSConnection,
     ACSRequestData,
     ACSRequestException,
-    ACSRequestMethod,
     ACSRequestResponse,
+    status,
 )
+from acslib.base.connection import ACSRequestMethod
 from acslib.ccure.config import CcureConfigFactory
 
 
