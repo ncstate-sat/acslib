@@ -7,6 +7,7 @@ name = "acslib"
 version = "0.1.1"
 authors = [
     { name="Jeremy Gibson", email="jmgibso3@ncsu.edu" },
+    { name="Ryan Semmler", email="rsemmle@ncsu.edu" },
 ]
 description = "A library for interacting with Access Control Systems like Genetec or Ccure9k"
 readme = "README.md"

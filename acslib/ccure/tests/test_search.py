@@ -1,7 +1,7 @@
 import pytest
 
 from acslib.base.search import BooleanOperators, TermOperators
-from acslib.ccure.search import (
+from acslib.ccure.filters import (
     FUZZ,
     LFUZZ,
     NFUZZ,

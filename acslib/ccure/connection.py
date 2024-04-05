@@ -32,7 +32,7 @@ class CcureConnection(ACSConnection):
 
     @property
     def base_headers(self):
-        """."""
+        """Headers required for each request to CCure"""
         return {
             "session-id": self.get_session_id(),
             "Access-Control-Expose-Headers": "session-id",
@@ -43,7 +43,7 @@ class CcureConnection(ACSConnection):
         return {"Content-Type": "application/x-www-form-urlencoded"}
 
     def login(self):
-        """."""
+        """Open a new CCure session and generate a new session ID"""
         try:
             response = self.request(
                 ACSRequestMethod.POST,
@@ -81,16 +81,14 @@ class CcureConnection(ACSConnection):
                 self.session_id = None
 
     def get_session_id(self):
-        """."""
+        """Get the ID for the current CCure session or generate a new one"""
         self.logger.debug(f"Session ID: {self.session_id}")
         if self.session_id is None:
             return self.login()
         return self.session_id
 
     def keepalive(self):
-        """
-        Prevent the CCure api session from expiring from inactivity.
-        """
+        """Prevent the CCure api session from expiring from inactivity"""
         self.logger.debug(f"Keeeping CCure session alive: {self.session_id}")
         try:
             self.request(
