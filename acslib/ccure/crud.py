@@ -306,13 +306,22 @@ class CcureClearanceItem(CcureACS):
         )
 
     def create(
-        self, item_type: ClearanceItemType, create_data: ClearanceItemCreateData
+        self,
+        item_type: ClearanceItemType,
+        controller_id: int,
+        create_data: ClearanceItemCreateData,
     ) -> ACSRequestResponse:
-        """Create a new clearance item object"""
+        """
+        Create a new clearance item object
+
+        :param item_type: eg ClearanceItemType.DOOR, ClearanceItemType.ELEVATOR
+        :param controller_id: object ID for the iStarController object for the new clearance item
+        :param create_data: object with properties required to create a new clearance item
+        """
         create_data_dict = create_data.model_dump()
         request_data = {
             "type": "SoftwareHouse.NextGen.Common.SecurityObjects.iStarController",
-            "ID": 5000,  # TODO where is this number coming from
+            "ID": controller_id,
             "Children": [
                 {
                     "Type": item_type.complete,

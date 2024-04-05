@@ -40,3 +40,5 @@ class ClearanceItemCreateData(BaseModel):
     ParentType: str
     ControllerID: int
     ControllerClassType: str
+
+    model_config = ConfigDict(extra="allow")
