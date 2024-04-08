@@ -97,9 +97,6 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
-      - name: adhoc run fetch
-        run: git fetch
-
       - name: Retrieve current version
         run: |
           echo "CURRENT_VERSION_NUM=$(grep -m 1 version pyproject.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)" >> $GITHUB_ENV
