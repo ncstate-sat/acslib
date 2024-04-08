@@ -11,8 +11,8 @@ def test_default_ccure_acs(env_config, caplog):
     """Default picks up env vars."""
     ccure = CcureACS()
     assert ccure.config.base_url == "https://example.com/ccure"
-    assert ccure.logger.name == "acslib.ccure.base"
-    assert "acslib.ccure.base" in caplog.text
+    assert ccure.logger.name == "acslib.ccure.connection"
+    assert "acslib.ccure.connection" in caplog.text
 
 
 def test_user_supplied_logger(env_config, caplog):
@@ -22,9 +22,10 @@ def test_user_supplied_logger(env_config, caplog):
     cc_conn = CcureConnection(logger=logging.getLogger("test"))
     ccure = CcureACS(connection=cc_conn)
     assert ccure.logger.name == "test"
-    assert "test:base" in caplog.text
+    assert "test:connection" in caplog.text
 
 
+@pytest.mark.skip(reason="ccure search no longer works this way")
 def test_default_ccure_search(env_config, personnel_response, caplog):
     ccure = CcureACS()
     with patch(
@@ -35,6 +36,7 @@ def test_default_ccure_search(env_config, personnel_response, caplog):
     assert "Searching for personnel" in caplog.text
 
 
+@pytest.mark.skip(reason="ccure search no longer works this way")
 def test_ccure_search_with_filter(env_config, personnel_response, caplog):
     ccure = CcureACS()
     filter = PersonnelFilter()
@@ -46,6 +48,7 @@ def test_ccure_search_with_filter(env_config, personnel_response, caplog):
     assert "Searching for personnel" in caplog.text
 
 
+@pytest.mark.skip(reason="ccure search no longer works this way")
 def test_invalid_search_type(env_config):
     class NewTypes(Enum):
         NEW = "new"

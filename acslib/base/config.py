@@ -6,7 +6,6 @@ class ACSConfigException(Exception):
 
 
 class ACSConfig(ABC):
-
     @abstractmethod
     def connection_data(self):
         pass
