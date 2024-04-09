@@ -104,7 +104,7 @@ jobs:
         run: |
           git ls-remote --tags
           git branch
-          git tags
+          git tag
 
       - name: Retrieve current version
         run: |
