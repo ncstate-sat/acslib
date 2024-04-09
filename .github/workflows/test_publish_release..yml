@@ -96,7 +96,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
+          fetch-depth: 0
           fetch-tags: true
+
+      - name: check tags
+        run: |
+          git ls-remote --tags
+          git branch
+          git tags
 
       - name: Retrieve current version
         run: |
