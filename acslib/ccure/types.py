@@ -4,6 +4,18 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 
+class PersonnelCreateData(BaseModel):
+    """
+    Validates fields for creating new Personnel objects in CCure.
+
+    Only the LastName field is required. All other Personnel model fields are also allowed.
+    """
+
+    LastName: str
+
+    model_config = ConfigDict(extra="allow")
+
+
 class CredentialCreateData(BaseModel):
     """
     Validates fields used for creating new Credential objects in CCure,
