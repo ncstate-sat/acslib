@@ -11,12 +11,12 @@ from acslib.ccure.filters import (
     CredentialFilter,
     PersonnelFilter,
 )
-from acslib.ccure.types import (
+from acslib.ccure.data_models import (
     ClearanceItemCreateData,
-    ClearanceItemType,
     CredentialCreateData,
     PersonnelCreateData,
 )
+from acslib.ccure.types import ClearanceItemType
 
 
 class CcureAPI:
