@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 
 from acslib.base import ACSRequestData, ACSRequestResponse
@@ -10,7 +11,12 @@ from acslib.ccure.filters import (
     CredentialFilter,
     PersonnelFilter,
 )
-from acslib.ccure.types import ClearanceItemCreateData, ClearanceItemType, CredentialCreateData
+from acslib.ccure.data_models import (
+    ClearanceItemCreateData,
+    CredentialCreateData,
+    PersonnelCreateData,
+)
+from acslib.ccure.types import ClearanceItemType
 
 
 class CcureAPI:
@@ -27,6 +33,12 @@ class CcurePersonnel(CcureACS):
         self.search_filter = PersonnelFilter()
 
     def search(self, terms: list, search_filter: Optional[PersonnelFilter] = None) -> list:
+        """
+        Get a list of Personnel objects matching given search terms
+
+        :param terms: list of search terms
+        :param search filter: specifies how and in what fields to look for the search terms
+        """
         self.logger.info("Searching for personnel")
         search_filter = search_filter or self.search_filter
         request_json = {
@@ -47,6 +59,7 @@ class CcurePersonnel(CcureACS):
         ).json
 
     def count(self) -> int:
+        """Get the total number of Personnel objects"""
         request_json = {
             "TypeFullName": "Personnel",
             "pageSize": 0,
@@ -62,14 +75,60 @@ class CcurePersonnel(CcureACS):
             ),
         ).json
 
-    def update(self, record_id: str, update_data: dict) -> ACSRequestResponse:
-        pass
+    def update(self, personnel_id: int, update_data: dict) -> ACSRequestResponse:
+        """
+        Edit properties of a personnel object
 
-    def create(self, create_data: dict) -> ACSRequestResponse:
-        pass
+        :param personnel_id: the Personnel object's CCure ID
+        :param update_data: maps Personnel properties to their new values
+        """
+        return self.connection.request(
+            ACSRequestMethod.PUT,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.EDIT_OBJECT,
+                params={
+                    "type": "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel",
+                    "id": personnel_id,
+                },
+                data=self.connection.encode_data(
+                    {
+                        "PropertyNames": list(update_data.keys()),
+                        "PropertyValues": list(update_data.values()),
+                    }
+                ),
+                headers=self.connection.base_headers | self.connection.header_for_form_data,
+            ),
+        )
 
-    def delete(self, record_id: str) -> ACSRequestResponse:
-        pass
+    def create(self, create_data: PersonnelCreateData) -> ACSRequestResponse:
+        """
+        Create a new personnel object
+
+        create_data must contain a 'LastName' property.
+        """
+        create_data_dict = create_data.model_dump()
+        request_data = create_data_dict | {
+            "ClassType": "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel"
+        }
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.CREATE_PERSONNEL,
+                data=json.dumps(request_data),
+                headers=self.connection.base_headers,
+            ),
+        )
+
+    def delete(self, personnel_id: int) -> ACSRequestResponse:
+        """Delete a personnel object by its CCure ID"""
+        return self.connection.request(
+            ACSRequestMethod.DELETE,
+            request_data=ACSRequestData(
+                url=self.config.base_url
+                + self.config.endpoints.DELETE_PERSONNEL.format(_id=personnel_id),
+                headers=self.connection.base_headers,
+            ),
+        )
 
 
 class CcureClearance(CcureACS):
@@ -78,6 +137,12 @@ class CcureClearance(CcureACS):
         self.search_filter = ClearanceFilter()
 
     def search(self, terms: list, search_filter: Optional[ClearanceFilter] = None) -> list:
+        """
+        Get a list of Clearance objects matching given search terms
+
+        :param terms: list of search terms
+        :param search filter: specifies how and in what fields to look for the search terms
+        """
         self.logger.info("Searching for clearances")
         search_filter = search_filter or self.search_filter
         request_json = {
@@ -101,6 +166,7 @@ class CcureClearance(CcureACS):
         ).json[1:]
 
     def count(self) -> int:
+        """Get the total number of Clearance objects"""
         request_options = {
             "pageSize": 0,
             "TypeFullName": "Clearance",
@@ -117,13 +183,13 @@ class CcureClearance(CcureACS):
             ),
         ).json
 
-    def update(self, record_id: str, update_data: dict) -> ACSRequestResponse:
+    def update(self, record_id: int, update_data: dict) -> ACSRequestResponse:
         pass
 
     def create(self, create_data: dict) -> ACSRequestResponse:
         pass
 
-    def delete(self, record_id: str) -> ACSRequestResponse:
+    def delete(self, record_id: int) -> ACSRequestResponse:
         pass
 
 
@@ -135,6 +201,12 @@ class CcureCredential(CcureACS):
     def search(
         self, terms: Optional[list] = None, search_filter: Optional[CredentialFilter] = None
     ) -> list:
+        """
+        Get a list of Credential objects matching given search terms
+
+        :param terms: list of search terms
+        :param search filter: specifies how and in what fields to look for the search terms
+        """
         self.logger.info("Searching for credentials")
         if terms:
             search_filter = search_filter or self.search_filter
@@ -167,6 +239,7 @@ class CcureCredential(CcureACS):
             ).json[1:]
 
     def count(self) -> int:
+        """Get the total number of Credential objects"""
         response = self.connection.request(
             ACSRequestMethod.GET,
             request_data=ACSRequestData(
@@ -176,7 +249,13 @@ class CcureCredential(CcureACS):
         ).json
         return response[0]["TotalRowsInAllPages"]
 
-    def update(self, record_id: str, update_data: dict) -> ACSRequestResponse:
+    def update(self, record_id: int, update_data: dict) -> ACSRequestResponse:
+        """
+        Edit properties of a Credential object
+
+        :param record_id: the Credential object's CCure ID
+        :param update_data: maps Credential properties to their new values
+        """
         return self.connection.request(
             ACSRequestMethod.PUT,
             request_data=ACSRequestData(
@@ -228,6 +307,7 @@ class CcureCredential(CcureACS):
         )
 
     def delete(self, record_id: int) -> ACSRequestResponse:
+        """Delete a Credential object by its CCure ID"""
         return self.connection.request(
             ACSRequestMethod.DELETE,
             request_data=ACSRequestData(
@@ -249,6 +329,12 @@ class CcureClearanceItem(CcureACS):
         terms: Optional[list] = None,
         search_filter: Optional[ClearanceItemFilter] = None,
     ) -> list:
+        """
+        Get a list of ClearanceItem objects matching given search terms
+
+        :param terms: list of search terms
+        :param search filter: specifies how and in what fields to look for the search terms
+        """
         self.logger.info("Searching for clearance items")
         search_filter = search_filter or self.search_filter
         request_json = {
@@ -270,6 +356,7 @@ class CcureClearanceItem(CcureACS):
         return response.json
 
     def count(self, item_type: ClearanceItemType) -> int:
+        """Get the total number of ClearanceItem objects"""
         request_json = {
             "TypeFullName": item_type.complete,
             "pageSize": 0,
@@ -288,8 +375,15 @@ class CcureClearanceItem(CcureACS):
         return response.json
 
     def update(
-        self, item_type: ClearanceItemType, item_id: str, update_data: dict
+        self, item_type: ClearanceItemType, item_id: int, update_data: dict
     ) -> ACSRequestResponse:
+        """
+        Edit properties of a ClearanceItem object
+
+        :param item_type: specifies an item type. eg ClearanceItemType.DOOR
+        :param item_id: the ClearanceItem object's CCure ID
+        :param update_data: maps ClearanceItem properties to their new values
+        """
         return self.connection.request(
             ACSRequestMethod.PUT,
             request_data=ACSRequestData(
@@ -340,6 +434,7 @@ class CcureClearanceItem(CcureACS):
         )
 
     def delete(self, item_type: ClearanceItemType, item_id: int) -> ACSRequestResponse:
+        """Delete a ClearanceItem object by its CCure ID"""
         return self.connection.request(
             ACSRequestMethod.DELETE,
             request_data=ACSRequestData(

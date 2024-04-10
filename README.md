@@ -51,6 +51,37 @@ search_filter = PersonnelFilter(lookups={"Text1": FUZZ})
 response = ccure_api.personnel.search(["PER0892347"], search_filter=search_filter)
 ```
 
+#### Update a personnel record
+
+```python
+from acslib import CcureAPI
+
+# change MiddleName and Text14 for the person with CCure ID 5001
+ccure_api = CcureAPI()
+ccure_api.personnel.update(5001, {"Text14": "new text here", "MiddleName": "Shaquille"})
+```
+
+#### Add new personnel record
+
+```python
+from acslib import CcureAPI
+from acslib.ccure.types import PersonnelCreateData as pcd
+
+ccure_api = CcureAPI()
+new_person_data = pcd(FirstName="Kenny", LastName="Smith", Text1="001132808")
+ccure_api.personnel.create(new_person_data)
+```
+
+#### Delete a personnel record
+
+```python
+from acslib import CcureAPI
+
+# delete the personnel record with the CCure ID 6008
+ccure_api = CcureAPI()
+ccure_api.personnel.delete(6008)
+```
+
 ### Clearance
 
 #### Find a Clearance by name
