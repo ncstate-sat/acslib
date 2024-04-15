@@ -111,10 +111,12 @@ jobs:
           echo "PREV_VERSION_NUM=${PREV_VERSION:1}" >> $GITHUB_ENV
 
       - name: Check if version has been updated
-        # bash function checks if the first variable is less than the second one using version-sort
+        # first bash function checks if the first variable is less than or equal to the second one using version-sort
+        # second function uses the first to check if the first is strictly less than the second
         run: |
-          updated() { [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]; }
-          updated $PREV_VERSION_NUM $CURRENT_VERSION_NUM && echo "UPDATED=true" >> $GITHUB_ENV || echo "UPDATED=false" >> $GITHUB_ENV
+          verlte() { [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]; }
+          verlt() { [ "$1" = "$2" ] && return 1 || verlte $1 $2 }
+          verlt $PREV_VERSION_NUM $CURRENT_VERSION_NUM && echo "UPDATED=true" >> $GITHUB_ENV || echo "UPDATED=false" >> $GITHUB_ENV
 
       - name: Fail if version has not been updated
         if: ${{ !fromJSON(env.UPDATED) }}
