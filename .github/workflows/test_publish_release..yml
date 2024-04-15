@@ -13,7 +13,7 @@ env:
     RELEASE_REPO: https://github.com/ncstate-sat/acslib
     SLACK_UPDATES: true
     # sends notifications to the clearance slack channel
-    SLACK_CHANNEL_ID: C062CVCCTGW
+    SLACK_CHANNEL_ID: ${{ secrets.ACSLIB_CHANNEL_ID }}
     FLIT_USERNAME: __token__
     FLIT_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
@@ -111,10 +111,12 @@ jobs:
           echo "PREV_VERSION_NUM=${PREV_VERSION:1}" >> $GITHUB_ENV
 
       - name: Check if version has been updated
-        # bash function checks if the first variable is less than the second one using version-sort
+        # first bash function checks if the first variable is less than or equal to the second one using version-sort
+        # second function uses the first to check if the first is strictly less than the second
         run: |
-          updated() { [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]; }
-          updated $PREV_VERSION_NUM $CURRENT_VERSION_NUM && echo "UPDATED=true" >> $GITHUB_ENV || echo "UPDATED=false" >> $GITHUB_ENV
+          verlte() { [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]; }
+          verlt() { [ "$1" = "$2" ] && return 1 || verlte $1 $2 }
+          verlt $PREV_VERSION_NUM $CURRENT_VERSION_NUM && echo "UPDATED=true" >> $GITHUB_ENV || echo "UPDATED=false" >> $GITHUB_ENV
 
       - name: Fail if version has not been updated
         if: ${{ !fromJSON(env.UPDATED) }}
@@ -189,6 +191,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
+          fetch-depth: 0
           fetch-tags: true
 
       - name: Get SAT Actions
