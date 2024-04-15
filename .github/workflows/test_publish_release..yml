@@ -13,7 +13,7 @@ env:
     RELEASE_REPO: https://github.com/ncstate-sat/acslib
     SLACK_UPDATES: true
     # sends notifications to the clearance slack channel
-    SLACK_CHANNEL_ID: C062CVCCTGW
+    SLACK_CHANNEL_ID: ${{ secrets.ACSLIB_CHANNEL_ID }}
     FLIT_USERNAME: __token__
     FLIT_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
