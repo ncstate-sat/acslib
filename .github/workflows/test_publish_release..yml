@@ -115,7 +115,7 @@ jobs:
         # second function uses the first to check if the first is strictly less than the second
         run: |
           verlte() { [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]; }
-          verlt() { [ "$1" = "$2" ] && return 1 || verlte $1 $2 }
+          verlt() { [ "$1" = "$2" ] && return 1 || verlte $1 $2; }
           verlt $PREV_VERSION_NUM $CURRENT_VERSION_NUM && echo "UPDATED=true" >> $GITHUB_ENV || echo "UPDATED=false" >> $GITHUB_ENV
 
       - name: Fail if version has not been updated
