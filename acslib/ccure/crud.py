@@ -1,7 +1,7 @@
 import json
 from typing import Optional
 
-from acslib.base import ACSRequestData, ACSRequestResponse
+from acslib.base import ACSRequestData, ACSRequestResponse, status, ACSRequestException
 from acslib.base.connection import ACSRequestMethod
 from acslib.ccure.base import CcureACS
 from acslib.ccure.connection import CcureConnection
@@ -183,14 +183,20 @@ class CcureClearance(CcureACS):
             ),
         ).json
 
-    def update(self, record_id: int, update_data: dict) -> ACSRequestResponse:
-        pass
+    def update(self, *args, **kwargs) -> ACSRequestResponse:
+        raise ACSRequestException(
+            status.HTTP_501_NOT_IMPLEMENTED, "Updating clearances is not currently supported."
+        )
 
-    def create(self, create_data: dict) -> ACSRequestResponse:
-        pass
+    def create(self, *args, **kwargs) -> ACSRequestResponse:
+        raise ACSRequestException(
+            status.HTTP_501_NOT_IMPLEMENTED, "Creating clearances is not currently supported."
+        )
 
-    def delete(self, record_id: int) -> ACSRequestResponse:
-        pass
+    def delete(self, *args, **kwargs) -> ACSRequestResponse:
+        raise ACSRequestException(
+            status.HTTP_501_NOT_IMPLEMENTED, "Deleting clearances is not currently supported."
+        )
 
 
 class CcureCredential(CcureACS):
