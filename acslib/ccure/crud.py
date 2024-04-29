@@ -1,5 +1,10 @@
+import base64
+from datetime import datetime, timezone
+from io import IOBase
 import json
 from typing import Optional
+
+from PIL import Image
 
 from acslib.base import ACSRequestData, ACSRequestResponse, status, ACSRequestException
 from acslib.base.connection import ACSRequestMethod
@@ -16,7 +21,7 @@ from acslib.ccure.data_models import (
     CredentialCreateData,
     PersonnelCreateData,
 )
-from acslib.ccure.types import ClearanceItemType
+from acslib.ccure.types import ObjectType, ImageType
 
 
 class CcureAPI:
@@ -128,6 +133,79 @@ class CcurePersonnel(CcureACS):
                 + self.config.endpoints.DELETE_PERSONNEL.format(_id=personnel_id),
                 headers=self.connection.base_headers,
             ),
+        )
+
+    def add_image(
+        self, personnel_id: int, image: str, image_name: str = "", partition_id: int = 1
+    ) -> ACSRequestResponse:
+        """
+        Set an image to a personnel object's PrimaryPortrait property
+        - `image` is base-64 encoded.
+        - `image_name` must be unique.
+        - `partition_id` refers to the partition where the personnel object is stored.
+        """
+        if not image_name:
+            timestamp = int(datetime.now(timezone.utc).timestamp())
+            image_name = f"{personnel_id}_{timestamp}"
+        request_data = {
+            "type": ObjectType.PERSONNEL.complete,
+            "ID": personnel_id,
+            "Children": [
+                {
+                    "Type": ObjectType.IMAGE.complete,
+                    "PropertyNames": [
+                        "Name",
+                        "ParentId",  # required but doesn't do anything
+                        "ImageType",
+                        "PartitionID",
+                        "Primary",
+                        "Image",
+                    ],
+                    "Propertyvalues": [
+                        image_name,
+                        personnel_id,
+                        ImageType.PORTRAIT.value,
+                        partition_id,
+                        True,  # we're only adding primary portraits
+                        image,
+                    ],
+                }
+            ],
+        }
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
+                data=self.connection.encode_data(request_data),
+                headers=self.connection.base_headers | self.connection.header_for_form_data,
+            ),
+        )
+
+    def get_image(self, personnel_id: int) -> str:
+        """
+        Get the `PrimaryPortrait` property for the person with the given personnel ID.
+        The returned image is a base-64 encoded string.
+        """
+        self.logger.info(f"Getting personnel image for personnel {personnel_id}")
+        request_json = {
+            "TypeFullName": "Personnel",
+            "pageSize": self.connection.config.page_size,
+            "pageNumber": 1,
+            "DisplayProperties": ["PrimaryPortrait"],
+            "WhereClause": f"ObjectID = {personnel_id}",
+        }
+        response = self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
+                request_json=request_json,
+                headers=self.connection.base_headers,
+            ),
+        ).json
+        if response:
+            return response[0]["PrimaryPortrait"]
+        raise ACSRequestException(
+            status.HTTP_400_BAD_REQUEST, f"No personnel found with id {personnel_id}"
         )
 
 
@@ -331,7 +409,7 @@ class CcureClearanceItem(CcureACS):
 
     def search(
         self,
-        item_type: ClearanceItemType,
+        item_type: ObjectType,
         terms: Optional[list] = None,
         search_filter: Optional[ClearanceItemFilter] = None,
     ) -> list:
@@ -361,7 +439,7 @@ class CcureClearanceItem(CcureACS):
         )
         return response.json
 
-    def count(self, item_type: ClearanceItemType) -> int:
+    def count(self, item_type: ObjectType) -> int:
         """Get the total number of ClearanceItem objects"""
         request_json = {
             "TypeFullName": item_type.complete,
@@ -380,9 +458,7 @@ class CcureClearanceItem(CcureACS):
         )
         return response.json
 
-    def update(
-        self, item_type: ClearanceItemType, item_id: int, update_data: dict
-    ) -> ACSRequestResponse:
+    def update(self, item_type: ObjectType, item_id: int, update_data: dict) -> ACSRequestResponse:
         """
         Edit properties of a ClearanceItem object
 
@@ -407,7 +483,7 @@ class CcureClearanceItem(CcureACS):
 
     def create(
         self,
-        item_type: ClearanceItemType,
+        item_type: ObjectType,
         controller_id: int,
         create_data: ClearanceItemCreateData,
     ) -> ACSRequestResponse:
@@ -439,7 +515,7 @@ class CcureClearanceItem(CcureACS):
             ),
         )
 
-    def delete(self, item_type: ClearanceItemType, item_id: int) -> ACSRequestResponse:
+    def delete(self, item_type: ObjectType, item_id: int) -> ACSRequestResponse:
         """Delete a ClearanceItem object by its CCure ID"""
         return self.connection.request(
             ACSRequestMethod.DELETE,
