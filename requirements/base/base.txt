@@ -22,8 +22,6 @@ ldap3==2.9.1
     # via sat-utils
 oracledb==1.4.1
     # via sat-utils
-pillow==10.3.0
-    # via acslib (pyproject.toml)
 pyasn1==0.5.0
     # via ldap3
 pycparser==2.21

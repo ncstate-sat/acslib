@@ -132,8 +132,6 @@ pathspec==0.11.2
     #   mkdocs
 pbr==6.0.0
     # via stevedore
-pillow==10.3.0
-    # via acslib (pyproject.toml)
 platformdirs==3.11.0
     # via
     #   black
