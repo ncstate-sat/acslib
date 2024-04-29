@@ -1,10 +1,6 @@
-import base64
 from datetime import datetime, timezone
-from io import IOBase
 import json
 from typing import Optional
-
-from PIL import Image
 
 from acslib.base import ACSRequestData, ACSRequestResponse, status, ACSRequestException
 from acslib.base.connection import ACSRequestMethod
@@ -205,7 +201,7 @@ class CcurePersonnel(CcureACS):
         if response:
             return response[0]["PrimaryPortrait"]
         raise ACSRequestException(
-            status.HTTP_400_BAD_REQUEST, f"No personnel found with id {personnel_id}"
+            status.HTTP_400_BAD_REQUEST, f"No personnel found with ID {personnel_id}"
         )
 
 
