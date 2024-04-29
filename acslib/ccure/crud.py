@@ -177,7 +177,7 @@ class CcurePersonnel(CcureACS):
             ),
         )
 
-    def get_image(self, personnel_id: int) -> str:
+    def get_image(self, personnel_id: int) -> Optional[str]:
         """
         Get the `PrimaryPortrait` property for the person with the given personnel ID.
         The returned image is a base-64 encoded string.
