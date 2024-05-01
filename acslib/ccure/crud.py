@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-import json
 from typing import Optional
 
 from acslib.base import ACSRequestData, ACSRequestResponse, status, ACSRequestException
@@ -20,20 +19,20 @@ from acslib.ccure.data_models import (
 from acslib.ccure.types import ObjectType, ImageType
 
 
-class CcureAPI:
-    def __init__(self, connection: Optional[CcureConnection] = None):
-        self.personnel = CcurePersonnel(connection)
-        self.clearance = CcureClearance(connection)
-        self.credential = CcureCredential(connection)
-        self.clearance_item = CcureClearanceItem(connection)
-
-
 class CcurePersonnel(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
         self.search_filter = PersonnelFilter()
+        self.type = ObjectType.PERSONNEL.complete
 
-    def search(self, terms: list, search_filter: Optional[PersonnelFilter] = None) -> list:
+    def search(
+        self,
+        terms: list,
+        search_filter: Optional[PersonnelFilter] = None,
+        page_size=100,  # TODO parameterize
+        page_number=1,
+        params: dict = {},
+    ) -> list:
         """
         Get a list of Personnel objects matching given search terms
 
@@ -42,39 +41,26 @@ class CcurePersonnel(CcureACS):
         """
         self.logger.info("Searching for personnel")
         search_filter = search_filter or self.search_filter
-        request_json = {
-            "TypeFullName": "Personnel",
-            "pageSize": self.connection.config.page_size,
-            "pageNumber": 1,
-            "DisplayProperties": search_filter.display_properties,
-            "WhereClause": search_filter.filter(terms),
-        }
 
-        return self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
-                request_json=request_json,
-                headers=self.connection.base_headers,
-            ),
-        ).json
+        return super().search(  # TODO rename base methods and call self instead of super?
+            object_type=self.type,
+            terms=terms,
+            search_filter=search_filter,
+            page_size=page_size,
+            page_number=page_number,
+            params=params,
+        )
 
-    def count(self) -> int:
+    def count(
+        self, terms: Optional[list] = [], search_filter: Optional[PersonnelFilter] = None
+    ) -> int:
         """Get the total number of Personnel objects"""
-        request_json = {
-            "TypeFullName": "Personnel",
-            "pageSize": 0,
-            "CountOnly": True,
-            "WhereClause": "",
-        }
-        return self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
-                request_json=request_json,
-                headers=self.connection.base_headers,
-            ),
-        ).json
+        search_filter = search_filter or self.search_filter
+        return self.search(
+            terms=terms,
+            search_filter=search_filter,
+            params={"CountOnly": True},
+        )
 
     def update(self, personnel_id: int, update_data: dict) -> ACSRequestResponse:
         """
@@ -83,22 +69,8 @@ class CcurePersonnel(CcureACS):
         :param personnel_id: the Personnel object's CCure ID
         :param update_data: maps Personnel properties to their new values
         """
-        return self.connection.request(
-            ACSRequestMethod.PUT,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.EDIT_OBJECT,
-                params={
-                    "type": "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel",
-                    "id": personnel_id,
-                },
-                data=self.connection.encode_data(
-                    {
-                        "PropertyNames": list(update_data.keys()),
-                        "PropertyValues": list(update_data.values()),
-                    }
-                ),
-                headers=self.connection.base_headers | self.connection.header_for_form_data,
-            ),
+        return super().update(
+            object_type=self.type, object_id=personnel_id, update_data=update_data
         )
 
     def create(self, create_data: PersonnelCreateData) -> ACSRequestResponse:
@@ -108,28 +80,12 @@ class CcurePersonnel(CcureACS):
         create_data must contain a 'LastName' property.
         """
         create_data_dict = create_data.model_dump()
-        request_data = create_data_dict | {
-            "ClassType": "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel"
-        }
-        return self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.CREATE_PERSONNEL,
-                data=json.dumps(request_data),
-                headers=self.connection.base_headers,
-            ),
-        )
+        request_data = create_data_dict | {"ClassType": self.type}
+        return super().create(request_data=request_data)
 
     def delete(self, personnel_id: int) -> ACSRequestResponse:
         """Delete a personnel object by its CCure ID"""
-        return self.connection.request(
-            ACSRequestMethod.DELETE,
-            request_data=ACSRequestData(
-                url=self.config.base_url
-                + self.config.endpoints.DELETE_PERSONNEL.format(_id=personnel_id),
-                headers=self.connection.base_headers,
-            ),
-        )
+        return super().delete(object_type=self.type, object_id=personnel_id)
 
     def add_image(
         self, personnel_id: int, image: str, image_name: str = "", partition_id: int = 1
@@ -143,74 +99,43 @@ class CcurePersonnel(CcureACS):
         if not image_name:
             timestamp = int(datetime.now(timezone.utc).timestamp())
             image_name = f"{personnel_id}_{timestamp}"
-        request_data = {
-            "type": ObjectType.PERSONNEL.complete,
-            "ID": personnel_id,
-            "Children": [
-                {
-                    "Type": ObjectType.IMAGE.complete,
-                    "PropertyNames": [
-                        "Name",
-                        "ParentId",  # required but doesn't do anything
-                        "ImageType",
-                        "PartitionID",
-                        "Primary",
-                        "Image",
-                    ],
-                    "Propertyvalues": [
-                        image_name,
-                        personnel_id,
-                        ImageType.PORTRAIT.value,
-                        partition_id,
-                        True,  # we're only adding primary portraits
-                        image,
-                    ],
-                }
-            ],
+        image_properties = {
+            "Name": image_name,
+            "ParentId": personnel_id,
+            "ImageType": ImageType.PORTRAIT.value,
+            "PartitionID": partition_id,
+            "Primary": True,  # we're only adding primary portraits
+            "Image": image,
         }
-        return self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
-                data=self.connection.encode_data(request_data),
-                headers=self.connection.base_headers | self.connection.header_for_form_data,
-            ),
+        return self.add_child(
+            parent_type=ObjectType.PERSONNEL.complete,
+            parent_id=personnel_id,
+            child_type=ObjectType.IMAGE.complete,
+            child_properties=image_properties,
         )
 
-    def get_image(self, personnel_id: int) -> Optional[str]:
+    def get_image(self, personnel_id: int) -> Optional[str]:  # TODO do we even need this?
         """
         Get the `PrimaryPortrait` property for the person with the given personnel ID.
         The returned image is a base-64 encoded string.
         """
-        self.logger.info(f"Getting personnel image for personnel {personnel_id}")
-        request_json = {
-            "TypeFullName": "Personnel",
-            "pageSize": self.connection.config.page_size,
-            "pageNumber": 1,
-            "DisplayProperties": ["PrimaryPortrait"],
-            "WhereClause": f"ObjectID = {personnel_id}",
-        }
-        response = self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
-                request_json=request_json,
-                headers=self.connection.base_headers,
-            ),
-        ).json
-        if response:
-            return response[0]["PrimaryPortrait"]
-        raise ACSRequestException(
-            status.HTTP_400_BAD_REQUEST, f"No personnel found with ID {personnel_id}"
-        )
+        return self.get_property(self.type, personnel_id, "PrimaryPortrait")
 
 
 class CcureClearance(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
         self.search_filter = ClearanceFilter()
+        self.type = ObjectType.CLEARANCE.complete
 
-    def search(self, terms: list, search_filter: Optional[ClearanceFilter] = None) -> list:
+    def search(
+        self,
+        terms: list,
+        search_filter: Optional[ClearanceFilter] = None,
+        page_size=100,  # TODO parameterize
+        page_number=1,
+        params: dict = {},
+    ) -> list:
         """
         Get a list of Clearance objects matching given search terms
 
@@ -219,46 +144,28 @@ class CcureClearance(CcureACS):
         """
         self.logger.info("Searching for clearances")
         search_filter = search_filter or self.search_filter
-        request_json = {
-            "partitionList": [],
-            "pageSize": self.connection.config.page_size,
-            "pageNumber": 1,
-            "sortColumnName": "",
-            "whereArgList": [],
-            "explicitPropertyList": [],
-            "propertyList": search_filter.display_properties,
-            "whereClause": search_filter.filter(terms),
-        }
-        return self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.connection.config.base_url
-                + self.connection.config.endpoints.CLEARANCES_FOR_ASSIGNMENT,
-                request_json=request_json,
-                headers=self.connection.base_headers,
-            ),
-        ).json[1:]
+        return super().search(
+            object_type=self.type,
+            terms=terms,
+            search_filter=search_filter,
+            page_size=page_size,
+            page_number=page_number,
+            params=params,  # TODO rename params
+        )
 
-    def count(self) -> int:
-        """Get the total number of Clearance objects"""
-        request_options = {
-            "pageSize": 0,
-            "TypeFullName": "Clearance",
-            "pageNumber": 1,
-            "CountOnly": True,
-            "WhereClause": "",
-        }
-        return self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.FIND_OBJS_W_CRITERIA,
-                request_json=request_options,
-                headers=self.connection.base_headers,
-            ),
-        ).json
+    def count(
+        self, terms: Optional[list] = [], search_filter: Optional[ClearanceFilter] = None
+    ) -> int:
+        """Get the number of Clearance objects matching the search terms"""
+        search_filter = search_filter or self.search_filter
+        return self.search(
+            terms=terms,
+            search_filter=search_filter,
+            params={"CountOnly": True},
+        )
 
     def update(self, *args, **kwargs) -> ACSRequestResponse:
-        raise ACSRequestException(
+        raise ACSRequestException(  # TODO use a new exception type instead of the base?
             status.HTTP_501_NOT_IMPLEMENTED, "Updating clearances is not currently supported."
         )
 
@@ -277,9 +184,15 @@ class CcureCredential(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
         self.search_filter = CredentialFilter()
+        self.type = ObjectType.CREDENTIAL.complete
 
     def search(
-        self, terms: Optional[list] = None, search_filter: Optional[CredentialFilter] = None
+        self,
+        terms: Optional[list] = None,
+        search_filter: Optional[CredentialFilter] = None,
+        page_size=100,  # TODO parameterize
+        page_number=1,
+        params: dict = {},
     ) -> list:
         """
         Get a list of Credential objects matching given search terms
@@ -288,47 +201,28 @@ class CcureCredential(CcureACS):
         :param search filter: specifies how and in what fields to look for the search terms
         """
         self.logger.info("Searching for credentials")
-        if terms:
-            search_filter = search_filter or self.search_filter
-            request_json = {
-                "TypeFullName": "SoftwareHouse.NextGen.Common.SecurityObjects.Credential",
-                "pageSize": 100,
-                "pageNumber": 1,
-                "DisplayProperties": search_filter.display_properties,
-                "WhereClause": search_filter.filter(terms),
-            }
-            response = self.connection.request(
-                ACSRequestMethod.POST,
-                request_data=ACSRequestData(
-                    url=self.connection.config.base_url
-                    + self.connection.config.endpoints.FIND_OBJS_W_CRITERIA,
-                    request_json=request_json,
-                    headers=self.connection.base_headers,
-                ),
-            )
-            return response.json
-        else:
-            # return all credentials
-            return self.connection.request(
-                ACSRequestMethod.GET,
-                request_data=ACSRequestData(
-                    url=self.connection.config.base_url
-                    + self.connection.config.endpoints.GET_CREDENTIALS,
-                    headers=self.connection.base_headers,
-                ),
-            ).json[1:]
+        search_filter = search_filter or self.search_filter
+        return super().search(
+            object_type=self.type,
+            terms=terms,
+            search_filter=search_filter,
+            page_size=page_size,
+            page_number=page_number,
+            params=params,
+        )
 
-    def count(self) -> int:
-        """Get the total number of Credential objects"""
-        response = self.connection.request(
-            ACSRequestMethod.GET,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.GET_CREDENTIALS,
-                headers=self.connection.base_headers,
-            ),
-        ).json
-        return response[0]["TotalRowsInAllPages"]
+    def count(
+        self, terms: Optional[list] = [], search_filter: Optional[CredentialFilter] = None
+    ) -> int:
+        """Get the number of Credential objects matching the search"""
+        search_filter = search_filter or self.search_filter
+        return self.search(
+            terms=terms,
+            search_filter=search_filter,
+            params={"CountOnly": True},
+        )
 
+    # TODO start here
     def update(self, record_id: int, update_data: dict) -> ACSRequestResponse:
         """
         Edit properties of a Credential object

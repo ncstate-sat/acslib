@@ -2,6 +2,8 @@ from enum import Enum
 
 
 class ObjectType(Enum):
+    CLEARANCE = "clearance"
+    CREDENTIAL = "credential"
     DOOR = "door"
     ELEVATOR = "elevator"
     IMAGE = "image"
@@ -9,6 +11,10 @@ class ObjectType(Enum):
 
     @property
     def complete(self):
+        if self == self.CLEARANCE:
+            return "SoftwareHouse.NextGen.Common.SecurityObjects.Clearance"
+        if self == self.CREDENTIAL:
+            return "SoftwareHouse.NextGen.Common.SecurityObjects.Credential"
         if self == self.DOOR:
             return "SoftwareHouse.NextGen.Common.SecurityObjects.Door"
         if self == self.ELEVATOR:

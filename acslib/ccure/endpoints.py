@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class V2Endpoints:
+    # TODO how many of these are we using
     FIND_OBJS_W_CRITERIA = "/victorwebservice/api/Objects/FindObjsWithCriteriaFilter"
     CLEARANCES_FOR_ASSIGNMENT = "/victorwebservice/api/v2/Personnel/ClearancesForAssignment"
     GET_ALL_WITH_CRITERIA = "/victorwebservice/api/Objects/GetAllWithCriteria"

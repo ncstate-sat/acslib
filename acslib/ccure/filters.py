@@ -28,12 +28,7 @@ NFUZZ = no_fuzz
 PERSONNEL_LOOKUP_FIELDS = {"FirstName": FUZZ, "LastName": FUZZ}
 CLEARANCE_LOOKUP_FIELDS = {"Name": FUZZ}
 CREDENTIAL_LOOKUP_FIELDS = {"Name": FUZZ}
-
-
-class SearchTypes(Enum):
-    PERSONNEL = "personnel"
-    CLEARANCE = "clearance"
-    CREDENTIAL = "credential"
+CLEARANCE_ITEM_LOOKUP_FIELDS = {"Name": FUZZ}
 
 
 class BaseCcureFilter(ACSFilter):
@@ -51,13 +46,14 @@ class BaseCcureFilter(ACSFilter):
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
+        display_properties: list[str] = [],
     ):
         self.filter_fields = lookups
         self.outer_bool = outer_bool.value
         self.inner_bool = inner_bool.value
         self.term_operator = term_operator.value
         #: List of properties from CCURE to be included in the CCURE response
-        self.display_properties = []
+        self.display_properties = display_properties
 
     def _compile_term(self, term) -> str:
         """Get all parts of the query for one search term"""
@@ -190,7 +186,7 @@ class ClearanceItemFilter(BaseCcureFilter):
         term_operator=TermOperators.FUZZY,
         display_properties: Optional[list[str]] = None,
     ):
-        self.filter_fields = lookups or CREDENTIAL_LOOKUP_FIELDS
+        self.filter_fields = lookups or CLEARANCE_ITEM_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
@@ -202,3 +198,13 @@ class ClearanceItemFilter(BaseCcureFilter):
         if not isinstance(search, list):
             raise TypeError("`search` must be a list of search terms")
         return self.outer_bool.join(self._compile_term(term) for term in search)
+
+
+# TODO this sucks change it
+filters_by_type = {
+    "SoftwareHouse.NextGen.Common.SecurityObjects.Door": ClearanceItemFilter,
+    "SoftwareHouse.NextGen.Common.SecurityObjects.Elevator": ClearanceItemFilter,
+    "SoftwareHouse.NextGen.Common.SecurityObjects.Credential": CredentialFilter,
+    "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel": PersonnelFilter,
+    "SoftwareHouse.NextGen.Common.SecurityObjects.Clearance": ClearanceFilter,
+}
