@@ -4,7 +4,13 @@ from acslib.base import ACSRequestResponse
 from acslib.base.connection import ACSRequestData, ACSRequestMethod
 from acslib.ccure.base import CcureACS
 from acslib.ccure.connection import CcureConnection
-from acslib.ccure.crud import CcurePersonnel, CcureClearance, CcureCredential, CcureClearanceItem
+from acslib.ccure.crud import (
+    CcurePersonnel,
+    CcureClearance,
+    CcureCredential,
+    CcureClearanceItem,
+    ClearanceAssignment,
+)
 from acslib.ccure.filters import ClearanceFilter, PersonnelFilter, CredentialFilter
 
 
@@ -14,3 +20,5 @@ class CcureAPI:
         self.clearance = CcureClearance(connection)
         self.credential = CcureCredential(connection)
         self.clearance_item = CcureClearanceItem(connection)
+        self.clearance_assignment = ClearanceAssignment(connection)
+        self.object = CcureACS(connection)

@@ -6,7 +6,7 @@ from acslib.ccure.filters import filters_by_type, NFUZZ
 
 
 class CcureACS(AccessControlSystem):
-    """."""
+    """Base class for CCure API interactions"""
 
     def __init__(self, connection: Optional[CcureConnection] = None):
         """."""
@@ -26,9 +26,9 @@ class CcureACS(AccessControlSystem):
         object_type: str,
         terms: Optional[list] = None,
         search_filter=None,
-        page_size=100,
+        page_size=100,  # TODO parameterize args
         page_number=1,
-        params: dict = {},  # TODO parameterize args
+        params: dict = {},
     ) -> list:
         """
         doop doop

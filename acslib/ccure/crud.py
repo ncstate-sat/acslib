@@ -121,6 +121,9 @@ class CcurePersonnel(CcureACS):
         """
         return self.get_property(self.type, personnel_id, "PrimaryPortrait")
 
+    def get_assigned_clearances(self, personnel_id: int) -> list[dict]:
+        pass
+
 
 class CcureClearance(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
@@ -179,6 +182,9 @@ class CcureClearance(CcureACS):
             status.HTTP_501_NOT_IMPLEMENTED, "Deleting clearances is not currently supported."
         )
 
+    def get_assignees(self, clearance_id: int) -> list[dict]:
+        pass
+
 
 class CcureCredential(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
@@ -222,7 +228,6 @@ class CcureCredential(CcureACS):
             params={"CountOnly": True},
         )
 
-    # TODO start here
     def update(self, record_id: int, update_data: dict) -> ACSRequestResponse:
         """
         Edit properties of a Credential object
@@ -230,23 +235,7 @@ class CcureCredential(CcureACS):
         :param record_id: the Credential object's CCure ID
         :param update_data: maps Credential properties to their new values
         """
-        return self.connection.request(
-            ACSRequestMethod.PUT,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.EDIT_OBJECT,
-                params={
-                    "type": "SoftwareHouse.NextGen.Common.SecurityObjects.Credential",
-                    "id": record_id,
-                },
-                data=self.connection.encode_data(
-                    {
-                        "PropertyNames": list(update_data.keys()),
-                        "PropertyValues": list(update_data.values()),
-                    }
-                ),
-                headers=self.connection.base_headers | self.connection.header_for_form_data,
-            ),
-        )
+        return super().update(object_type=self.type, object_id=record_id, update_data=update_data)
 
     def create(self, personnel_id: int, create_data: CredentialCreateData) -> ACSRequestResponse:
         """
@@ -260,39 +249,21 @@ class CcureCredential(CcureACS):
             of the `CHUID` value in create_data.
         """
         create_data_dict = create_data.model_dump()
-        request_data = {
-            "type": "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel",
-            "ID": personnel_id,
-            "Children": [
-                {
-                    "Type": "SoftwareHouse.NextGen.Common.SecurityObjects.Credential",
-                    "PropertyNames": list(create_data_dict.keys()),
-                    "PropertyValues": list(create_data_dict.values()),
-                }
-            ],
-        }
-        return self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
-                data=self.connection.encode_data(request_data),
-                headers=self.connection.base_headers | self.connection.header_for_form_data,
-            ),
+        return self.add_child(
+            parent_type=ObjectType.PERSONNEL.complete,
+            parent_id=personnel_id,
+            child_type=ObjectType.CREDENTIAL.complete,
+            child_properties=create_data_dict,
         )
 
     def delete(self, record_id: int) -> ACSRequestResponse:
         """Delete a Credential object by its CCure ID"""
-        return self.connection.request(
-            ACSRequestMethod.DELETE,
-            request_data=ACSRequestData(
-                url=self.config.base_url
-                + self.config.endpoints.DELETE_CREDENTIAL.format(_id=record_id),
-                headers=self.connection.base_headers,
-            ),
-        )
+        return super().delete(object_type=self.type, object_id=record_id)
 
 
 class CcureClearanceItem(CcureACS):
+    """API interactions for doors and elevators"""
+
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
         self.search_filter = ClearanceItemFilter()
@@ -302,6 +273,9 @@ class CcureClearanceItem(CcureACS):
         item_type: ObjectType,
         terms: Optional[list] = None,
         search_filter: Optional[ClearanceItemFilter] = None,
+        page_size=100,  # TODO parameterize
+        page_number=1,
+        params: dict = {},
     ) -> list:
         """
         Get a list of ClearanceItem objects matching given search terms
@@ -311,42 +285,29 @@ class CcureClearanceItem(CcureACS):
         """
         self.logger.info("Searching for clearance items")
         search_filter = search_filter or self.search_filter
-        request_json = {
-            "TypeFullName": item_type.complete,
-            "pageSize": 100,
-            "pageNumber": 1,
-            "DisplayProperties": search_filter.display_properties,
-            "WhereClause": search_filter.filter(terms),
-        }
-        response = self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.connection.config.base_url
-                + self.connection.config.endpoints.GET_ALL_WITH_CRITERIA,
-                request_json=request_json,
-                headers=self.connection.base_headers,
-            ),
+        return super().search(  # TODO rename base methods and call self instead of super?
+            object_type=item_type.complete,
+            terms=terms,
+            search_filter=search_filter,
+            page_size=page_size,
+            page_number=page_number,
+            params=params,
         )
-        return response.json
 
-    def count(self, item_type: ObjectType) -> int:
+    def count(
+        self,
+        item_type: ObjectType,
+        terms: Optional[list] = [],
+        search_filter: Optional[PersonnelFilter] = None,
+    ) -> int:
         """Get the total number of ClearanceItem objects"""
-        request_json = {
-            "TypeFullName": item_type.complete,
-            "pageSize": 0,
-            "CountOnly": True,
-            "WhereClause": "",
-        }
-        response = self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.connection.config.base_url
-                + self.connection.config.endpoints.GET_ALL_WITH_CRITERIA,
-                request_json=request_json,
-                headers=self.connection.base_headers,
-            ),
+        search_filter = search_filter or self.search_filter
+        return self.search(
+            item_type=item_type.complete,
+            terms=terms,
+            search_filter=search_filter,
+            params={"CountOnly": True},
         )
-        return response.json
 
     def update(self, item_type: ObjectType, item_id: int, update_data: dict) -> ACSRequestResponse:
         """
@@ -356,19 +317,8 @@ class CcureClearanceItem(CcureACS):
         :param item_id: the ClearanceItem object's CCure ID
         :param update_data: maps ClearanceItem properties to their new values
         """
-        return self.connection.request(
-            ACSRequestMethod.PUT,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.EDIT_OBJECT,
-                params={"type": item_type.complete, "id": item_id},
-                data=self.connection.encode_data(
-                    {
-                        "PropertyNames": list(update_data.keys()),
-                        "PropertyValues": list(update_data.values()),
-                    }
-                ),
-                headers=self.connection.base_headers | self.connection.header_for_form_data,
-            ),
+        return super().update(
+            object_type=item_type.complete, object_id=item_id, update_data=update_data
         )
 
     def create(
@@ -385,33 +335,22 @@ class CcureClearanceItem(CcureACS):
         :param create_data: object with properties required to create a new clearance item
         """
         create_data_dict = create_data.model_dump()
-        request_data = {
-            "type": "SoftwareHouse.NextGen.Common.SecurityObjects.iStarController",
-            "ID": controller_id,
-            "Children": [
-                {
-                    "Type": item_type.complete,
-                    "PropertyNames": list(create_data_dict.keys()),
-                    "PropertyValues": list(create_data_dict.values()),
-                }
-            ],
-        }
-        return self.connection.request(
-            ACSRequestMethod.POST,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
-                data=self.connection.encode_data(request_data),
-                headers=self.connection.base_headers | self.connection.header_for_form_data,
-            ),
+
+        return self.add_child(
+            parent_type=ObjectType.ISTAR_CONTROLLER.complete,
+            parent_id=controller_id,
+            child_type=item_type.complete,
+            child_properties=create_data_dict,
         )
 
     def delete(self, item_type: ObjectType, item_id: int) -> ACSRequestResponse:
         """Delete a ClearanceItem object by its CCure ID"""
-        return self.connection.request(
-            ACSRequestMethod.DELETE,
-            request_data=ACSRequestData(
-                url=self.config.base_url + self.config.endpoints.DELETE_OBJECT,
-                params={"type": item_type.complete, "id": item_id},
-                headers=self.connection.base_headers,
-            ),
-        )
+        return super().delete(object_type=item_type.complete, object_id=item_id)
+
+
+class ClearanceAssignment(CcureACS):
+    def assign():
+        pass
+
+    def revoke():
+        pass

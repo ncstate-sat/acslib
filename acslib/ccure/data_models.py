@@ -41,12 +41,3 @@ class ClearanceItemCreateData(BaseModel):
     ControllerClassType: str
 
     model_config = ConfigDict(extra="allow")
-
-
-# TODO ugh not this
-models_by_type = {
-    "SoftwareHouse.NextGen.Common.SecurityObjects.Door": ClearanceItemCreateData,
-    "SoftwareHouse.NextGen.Common.SecurityObjects.Elevator": ClearanceItemCreateData,
-    "SoftwareHouse.NextGen.Common.SecurityObjects.Credential": CredentialCreateData,
-    "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel": PersonnelCreateData,
-}
