@@ -2,7 +2,7 @@ from typing import Optional
 
 from acslib.base import AccessControlSystem, ACSRequestData, ACSRequestResponse, ACSRequestException
 from acslib.ccure.connection import CcureConnection, ACSRequestMethod
-from acslib.ccure.filters import filters_by_type, NFUZZ
+from acslib.ccure.filters import CcureFilter, filters_by_type, NFUZZ
 
 
 class CcureACS(AccessControlSystem):
@@ -25,10 +25,11 @@ class CcureACS(AccessControlSystem):
         self,
         object_type: str,
         terms: Optional[list] = None,
-        search_filter=None,
+        search_filter: Optional[CcureFilter] = None,
         page_size=100,  # TODO parameterize args
         page_number=1,
-        params: dict = {},
+        params: dict = {},  # TODO rename
+        where_clause: Optional[str] = None,  # TODO ugly.
     ) -> list:
         """
         doop doop
@@ -39,7 +40,7 @@ class CcureACS(AccessControlSystem):
             "pageSize": page_size,
             "pageNumber": page_number,
             "DisplayProperties": search_filter.display_properties,
-            "WhereClause": search_filter.filter(terms),
+            "WhereClause": where_clause or search_filter.filter(terms),
         } | params
         response = self.connection.request(
             ACSRequestMethod.POST,
@@ -103,8 +104,8 @@ class CcureACS(AccessControlSystem):
             ),
         )
 
-    def add_child(
-        self, parent_type: str, parent_id: int, child_type: str, child_properties: dict
+    def add_children(
+        self, parent_type: str, parent_id: int, child_type: str, child_configs: list[dict]
     ) -> ACSRequestResponse:
         request_data = {
             "type": parent_type,
@@ -112,15 +113,39 @@ class CcureACS(AccessControlSystem):
             "Children": [
                 {
                     "Type": child_type,
-                    "PropertyNames": list(child_properties.keys()),
-                    "Propertyvalues": list(child_properties.values()),
+                    "PropertyNames": list(child_config.keys()),
+                    "Propertyvalues": list(child_config.values()),
                 }
+                for child_config in child_configs
             ],
         }
         return self.connection.request(
             ACSRequestMethod.POST,
             request_data=ACSRequestData(
                 url=self.config.base_url + self.config.endpoints.PERSIST_TO_CONTAINER,
+                data=self.connection.encode_data(request_data),
+                headers=self.connection.base_headers | self.connection.header_for_form_data,
+            ),
+        )
+
+    def remove_children(
+        self, parent_type: str, parent_id: int, child_type: str, child_ids: list[int]
+    ) -> ACSRequestResponse:
+        request_data = {
+            "type": parent_type,
+            "ID": parent_id,
+            "Children": [
+                {
+                    "Type": child_type,
+                    "ID": child_id,
+                }
+                for child_id in child_ids
+            ],
+        }
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.REMOVE_FROM_CONTAINER,
                 data=self.connection.encode_data(request_data),
                 headers=self.connection.base_headers | self.connection.header_for_form_data,
             ),

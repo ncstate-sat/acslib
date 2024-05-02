@@ -10,6 +10,8 @@ from acslib.ccure.filters import (
     ClearanceItemFilter,
     CredentialFilter,
     PersonnelFilter,
+    CcureFilter,
+    NFUZZ,
 )
 from acslib.ccure.data_models import (
     ClearanceItemCreateData,
@@ -107,11 +109,11 @@ class CcurePersonnel(CcureACS):
             "Primary": True,  # we're only adding primary portraits
             "Image": image,
         }
-        return self.add_child(
+        return self.add_children(
             parent_type=ObjectType.PERSONNEL.complete,
             parent_id=personnel_id,
             child_type=ObjectType.IMAGE.complete,
-            child_properties=image_properties,
+            child_configs=[image_properties],
         )
 
     def get_image(self, personnel_id: int) -> Optional[str]:  # TODO do we even need this?
@@ -121,8 +123,59 @@ class CcurePersonnel(CcureACS):
         """
         return self.get_property(self.type, personnel_id, "PrimaryPortrait")
 
-    def get_assigned_clearances(self, personnel_id: int) -> list[dict]:
-        pass
+    def assign_clearances(self, personnel_id: int, clearance_ids: list[int]) -> ACSRequestResponse:
+        """Assign clearances to a person"""
+        clearance_assignment_properties = [
+            {"PersonnelID": personnel_id, "ClearanceID": clearance_id}
+            for clearance_id in clearance_ids
+        ]
+        return self.add_children(
+            parent_type=ObjectType.PERSONNEL.complete,
+            parent_id=personnel_id,
+            child_type=ObjectType.CLEARANCE_ASSIGNMENT.complete,
+            child_configs=clearance_assignment_properties,
+        )
+
+    def revoke_clearances(self, personnel_id: int, clearance_ids: list[int]) -> ACSRequestResponse:
+        """
+        Revoke a person's clearances
+        Two steps: 1: Get the PersonnelClearancePair object IDs
+                   2: Remove those PersonnelClearancePair objects
+        """  # TODO should we even do this? should acslib do two-step functions?
+
+        # get PersonnelClearancePair object IDs
+        clearance_query = " OR ".join(
+            f"ClearanceID = {clearance_id}" for clearance_id in clearance_ids
+        )
+        assignment_ids = super().search(
+            object_type=ObjectType.CLEARANCE_ASSIGNMENT.complete,
+            terms=[personnel_id],
+            page_size=0,
+            where_clause=f"PersonnelID = {personnel_id} AND ({clearance_query})",
+        )
+
+        # remove PersonnelClearancePair objects
+        return self.remove_children(
+            parent_type=self.type,
+            parent_id=personnel_id,
+            child_type=ObjectType.CLEARANCE_ASSIGNMENT.complete,
+            child_ids=assignment_ids,
+        )
+
+    def get_assigned_clearances(
+        self, personnel_id: int, page_size=100, page_number=1
+    ) -> list[dict]:
+        """Get the clearance assignments associated with a person"""
+        search_filter = CcureFilter(
+            lookups={"PersonnelID": NFUZZ}, display_properties=["PersonnelID", "ClearanceID"]
+        )
+        return super().search(
+            object_type=ObjectType.CLEARANCE_ASSIGNMENT.complete,
+            terms=[personnel_id],
+            search_filter=search_filter,
+            page_size=page_size,
+            page_number=page_number,
+        )
 
 
 class CcureClearance(CcureACS):
@@ -167,6 +220,18 @@ class CcureClearance(CcureACS):
             params={"CountOnly": True},
         )
 
+    def get_assignees(self, clearance_id: int, page_size=100, page_number=1) -> list[dict]:
+        search_filter = CcureFilter(
+            lookups={"ClearanceID": NFUZZ}, display_properties=["PersonnelID", "ClearanceID"]
+        )
+        return super().search(
+            object_type=ObjectType.CLEARANCE_ASSIGNMENT.complete,
+            terms=[clearance_id],
+            search_filter=search_filter,
+            page_size=page_size,
+            page_number=page_number,
+        )
+
     def update(self, *args, **kwargs) -> ACSRequestResponse:
         raise ACSRequestException(  # TODO use a new exception type instead of the base?
             status.HTTP_501_NOT_IMPLEMENTED, "Updating clearances is not currently supported."
@@ -181,9 +246,6 @@ class CcureClearance(CcureACS):
         raise ACSRequestException(
             status.HTTP_501_NOT_IMPLEMENTED, "Deleting clearances is not currently supported."
         )
-
-    def get_assignees(self, clearance_id: int) -> list[dict]:
-        pass
 
 
 class CcureCredential(CcureACS):
@@ -249,11 +311,11 @@ class CcureCredential(CcureACS):
             of the `CHUID` value in create_data.
         """
         create_data_dict = create_data.model_dump()
-        return self.add_child(
+        return self.add_children(
             parent_type=ObjectType.PERSONNEL.complete,
             parent_id=personnel_id,
             child_type=ObjectType.CREDENTIAL.complete,
-            child_properties=create_data_dict,
+            child_configs=[create_data_dict],
         )
 
     def delete(self, record_id: int) -> ACSRequestResponse:
@@ -336,21 +398,13 @@ class CcureClearanceItem(CcureACS):
         """
         create_data_dict = create_data.model_dump()
 
-        return self.add_child(
+        return self.add_children(
             parent_type=ObjectType.ISTAR_CONTROLLER.complete,
             parent_id=controller_id,
             child_type=item_type.complete,
-            child_properties=create_data_dict,
+            child_configs=[create_data_dict],
         )
 
     def delete(self, item_type: ObjectType, item_id: int) -> ACSRequestResponse:
         """Delete a ClearanceItem object by its CCure ID"""
         return super().delete(object_type=item_type.complete, object_id=item_id)
-
-
-class ClearanceAssignment(CcureACS):
-    def assign():
-        pass
-
-    def revoke():
-        pass

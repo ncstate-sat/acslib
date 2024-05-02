@@ -9,7 +9,6 @@ from acslib.ccure.crud import (
     CcureClearance,
     CcureCredential,
     CcureClearanceItem,
-    ClearanceAssignment,
 )
 from acslib.ccure.filters import ClearanceFilter, PersonnelFilter, CredentialFilter
 
@@ -20,5 +19,4 @@ class CcureAPI:
         self.clearance = CcureClearance(connection)
         self.credential = CcureCredential(connection)
         self.clearance_item = CcureClearanceItem(connection)
-        self.clearance_assignment = ClearanceAssignment(connection)
-        self.object = CcureACS(connection)
+        self.object = CcureACS(connection)  # TODO rename

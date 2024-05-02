@@ -31,7 +31,7 @@ CREDENTIAL_LOOKUP_FIELDS = {"Name": FUZZ}
 CLEARANCE_ITEM_LOOKUP_FIELDS = {"Name": FUZZ}
 
 
-class BaseCcureFilter(ACSFilter):
+class CcureFilter(ACSFilter):
     """Base CCure Filter
     :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
@@ -72,7 +72,7 @@ class BaseCcureFilter(ACSFilter):
         pass
 
 
-class PersonnelFilter(BaseCcureFilter):
+class PersonnelFilter(CcureFilter):
     """Basic CCure Personnel Filter
     :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
@@ -104,7 +104,7 @@ class PersonnelFilter(BaseCcureFilter):
         return self.outer_bool.join(self._compile_term(term) for term in search)
 
 
-class ClearanceFilter(BaseCcureFilter):
+class ClearanceFilter(CcureFilter):
     """Basic CCure Clearance Filter
     :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
@@ -136,7 +136,7 @@ class ClearanceFilter(BaseCcureFilter):
         return self.outer_bool.join(self._compile_term(term) for term in search)
 
 
-class CredentialFilter(BaseCcureFilter):
+class CredentialFilter(CcureFilter):
     """Basic CCure Credential Filter
     :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
@@ -168,7 +168,7 @@ class CredentialFilter(BaseCcureFilter):
         return self.outer_bool.join(self._compile_term(term) for term in search)
 
 
-class ClearanceItemFilter(BaseCcureFilter):
+class ClearanceItemFilter(CcureFilter):
     """Basic CCure ClearanceItem Filter
     :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
