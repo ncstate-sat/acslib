@@ -227,7 +227,7 @@ from acslib.ccure.filters import CcureFilter, NFUZZ
 # search for schedule objects by ObjectID
 ccure = CcureAPI()
 schedule_type_full = "SoftwareHouse.CrossFire.Common.Objects.TimeSpec"
-search_filter = CcureFilter(lookups={"ObjectID": NFUZZ})
+search_filter = CcureFilter()
 response = ccure.ccure_object.search(
     object_type=schedule_type_full,
     search_filter=search_filter,
