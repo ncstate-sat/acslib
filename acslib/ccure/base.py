@@ -2,14 +2,13 @@ from typing import Optional
 
 from acslib.base import AccessControlSystem, ACSRequestData, ACSRequestResponse, ACSRequestException
 from acslib.ccure.connection import CcureConnection, ACSRequestMethod
-from acslib.ccure.filters import CcureFilter, filters_by_type, NFUZZ
+from acslib.ccure.filters import CcureFilter, NFUZZ
 
 
 class CcureACS(AccessControlSystem):
     """Base class for CCure API interactions"""
 
     def __init__(self, connection: Optional[CcureConnection] = None):
-        """."""
         super().__init__(connection=connection)
         if not self.connection:
             self.connection = CcureConnection()
@@ -24,24 +23,33 @@ class CcureACS(AccessControlSystem):
     def search(
         self,
         object_type: str,
+        search_filter: CcureFilter,
         terms: Optional[list] = None,
-        search_filter: Optional[CcureFilter] = None,
-        page_size=100,  # TODO parameterize args
-        page_number=1,
-        params: dict = {},  # TODO rename
-        where_clause: Optional[str] = None,  # TODO ugly.
-    ) -> list:
+        page_size: Optional[int] = None,
+        page_number: int = 1,
+        search_options: dict = {},
+        where_clause: Optional[str] = None,
+    ):
         """
-        doop doop
+        Return CCure objects meeting the given criteria
+
+        object_type: full name of the CCure object type, such as those in ObjectType
+        search_filter: CcureFilter object specifying search query and display properties
+        terms: search terms used to filter objects. Leave empty to include everything in results
+        page_size: number of search results to include
+        page_number: the page of search results to display. The first page is page 1.
+        search_options: other options to include in the request_json. eg. "CountOnly"
+        where_clause: sql-style WHERE clause to search objects. overrides `terms` if included.
         """
-        search_filter = search_filter or filters_by_type[object_type]
+        if page_size is None:
+            page_size = self.config.page_size
         request_json = {
             "TypeFullName": object_type,
             "pageSize": page_size,
             "pageNumber": page_number,
             "DisplayProperties": search_filter.display_properties,
             "WhereClause": where_clause or search_filter.filter(terms),
-        } | params
+        } | search_options
         response = self.connection.request(
             ACSRequestMethod.POST,
             request_data=ACSRequestData(
@@ -54,10 +62,8 @@ class CcureACS(AccessControlSystem):
         return response.json
 
     def get_property(self, object_type: str, object_id: int, property_name: str):
-        """Weeeoooooooo"""
-        search_filter = filters_by_type[object_type](
-            lookups={"ObjectId": NFUZZ}, display_properties=[property_name]
-        )
+        """Return the value of one property from one CCure object"""
+        search_filter = CcureFilter(lookups={"ObjectID": NFUZZ}, display_properties=[property_name])
         response = self.search(
             object_type=object_type, terms=[object_id], search_filter=search_filter, page_size=1
         )
@@ -71,7 +77,9 @@ class CcureACS(AccessControlSystem):
 
     def update(self, object_type: str, object_id: int, update_data: dict) -> ACSRequestResponse:
         """
-        Honk
+        Edit the properties of one CCure object
+
+        update_data: maps property names to their new values
         """
         return self.connection.request(
             ACSRequestMethod.PUT,
@@ -92,9 +100,7 @@ class CcureACS(AccessControlSystem):
         )
 
     def create(self, request_data: dict) -> ACSRequestResponse:
-        """
-        bluh
-        """
+        """Persist a new CCure object"""
         return self.connection.request(
             ACSRequestMethod.POST,
             request_data=ACSRequestData(
@@ -107,6 +113,7 @@ class CcureACS(AccessControlSystem):
     def add_children(
         self, parent_type: str, parent_id: int, child_type: str, child_configs: list[dict]
     ) -> ACSRequestResponse:
+        """Persist a new CCure object as a child of an existing CCure object"""
         request_data = {
             "type": parent_type,
             "ID": parent_id,
@@ -131,6 +138,7 @@ class CcureACS(AccessControlSystem):
     def remove_children(
         self, parent_type: str, parent_id: int, child_type: str, child_ids: list[int]
     ) -> ACSRequestResponse:
+        """Remove child CCure objects from a parent CCure object"""
         request_data = {
             "type": parent_type,
             "ID": parent_id,
@@ -152,7 +160,7 @@ class CcureACS(AccessControlSystem):
         )
 
     def delete(self, object_type: str, object_id: int) -> ACSRequestResponse:
-        """Whoooooooop"""
+        """Delete a CCure object"""
         return self.connection.request(
             ACSRequestMethod.DELETE,
             request_data=ACSRequestData(

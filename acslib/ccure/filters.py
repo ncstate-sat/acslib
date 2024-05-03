@@ -42,7 +42,7 @@ class CcureFilter(ACSFilter):
 
     def __init__(
         self,
-        lookups: dict[str, callable] = None,
+        lookups: dict[str, callable] = {"ObjectID": NFUZZ},
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
@@ -68,8 +68,10 @@ class CcureFilter(ACSFilter):
             raise TypeError("Properties must be a list of strings")
         self.display_properties += properties
 
-    def filter(self, search):
-        pass
+    def filter(self, search: list[str]) -> str:
+        if not isinstance(search, list):
+            raise TypeError("Search must be a list of strings")
+        return self.outer_bool.join(self._compile_term(term) for term in search)
 
 
 class PersonnelFilter(CcureFilter):
@@ -98,11 +100,6 @@ class PersonnelFilter(CcureFilter):
         if display_properties is not None:
             self.display_properties = display_properties
 
-    def filter(self, search: list[str]) -> str:
-        if not isinstance(search, list):
-            raise TypeError("Search must be a list of strings")
-        return self.outer_bool.join(self._compile_term(term) for term in search)
-
 
 class ClearanceFilter(CcureFilter):
     """Basic CCure Clearance Filter
@@ -129,11 +126,6 @@ class ClearanceFilter(CcureFilter):
         self.display_properties = ["Name"]
         if display_properties is not None:
             self.display_properties = display_properties
-
-    def filter(self, search: list[str]) -> str:
-        if not isinstance(search, list):
-            raise TypeError("Search must be a list of strings")
-        return self.outer_bool.join(self._compile_term(term) for term in search)
 
 
 class CredentialFilter(CcureFilter):
@@ -162,11 +154,6 @@ class CredentialFilter(CcureFilter):
         if display_properties is not None:
             self.display_properties = display_properties
 
-    def filter(self, search: list) -> str:
-        if not isinstance(search, list):
-            raise TypeError("`search` must be a list of search terms")
-        return self.outer_bool.join(self._compile_term(term) for term in search)
-
 
 class ClearanceItemFilter(CcureFilter):
     """Basic CCure ClearanceItem Filter
@@ -193,18 +180,3 @@ class ClearanceItemFilter(CcureFilter):
         self.display_properties = ["Name"]
         if display_properties is not None:
             self.display_properties = display_properties
-
-    def filter(self, search: list) -> str:
-        if not isinstance(search, list):
-            raise TypeError("`search` must be a list of search terms")
-        return self.outer_bool.join(self._compile_term(term) for term in search)
-
-
-# TODO this sucks change it
-filters_by_type = {
-    "SoftwareHouse.NextGen.Common.SecurityObjects.Door": ClearanceItemFilter,
-    "SoftwareHouse.NextGen.Common.SecurityObjects.Elevator": ClearanceItemFilter,
-    "SoftwareHouse.NextGen.Common.SecurityObjects.Credential": CredentialFilter,
-    "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel": PersonnelFilter,
-    "SoftwareHouse.NextGen.Common.SecurityObjects.Clearance": ClearanceFilter,
-}

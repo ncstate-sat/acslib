@@ -19,4 +19,4 @@ class CcureAPI:
         self.clearance = CcureClearance(connection)
         self.credential = CcureCredential(connection)
         self.clearance_item = CcureClearanceItem(connection)
-        self.object = CcureACS(connection)  # TODO rename
+        self.ccure_object = CcureACS(connection)
