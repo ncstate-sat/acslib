@@ -28,8 +28,6 @@ class ACSRequestException(Exception):
 
 
 class ACSNotImplementedException(ACSRequestException):
-    """"""
-
     def __init__(self, log_message: str):
         self.status_code = (status.HTTP_501_NOT_IMPLEMENTED,)
         self.message = log_message
