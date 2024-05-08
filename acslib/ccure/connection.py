@@ -175,12 +175,12 @@ class CcureConnection(ACSConnection):
             """
             entries = []
             for key, val in data.items():
-                if isinstance(val, (int, str)):
+                if isinstance(val, (int, float, str)):
                     if prefix:
                         entries.append(f"{prefix}[{key}]={val}")
                     else:
                         entries.append(f"{key}={val}")
-                elif isinstance(val, list):
+                elif isinstance(val, (list, tuple)):
                     for i, list_item in enumerate(val):
                         if isinstance(list_item, dict):
                             entries.extend(
