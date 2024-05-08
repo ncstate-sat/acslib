@@ -4,9 +4,10 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "acslib"
-version = "0.1.3"
+version = "0.1.7"
 authors = [
     { name="Jeremy Gibson", email="jmgibso3@ncsu.edu" },
+    { name="Luc Sanchez", email="lgsanche@ncsu.edu" },
     { name="Ryan Semmler", email="rsemmle@ncsu.edu" },
 ]
 description = "A library for interacting with Access Control Systems like Genetec or Ccure9k"
@@ -55,9 +56,9 @@ include = '\.pyi?$'
 
 [tool.ruff]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
-select = ["E", "F", "W", "I001"]
+select = ["E", "F", "W"]
 src = ["acslib"]
-ignore = ["E501"]
+ignore = ["E501", "F401"]
 fix = true
 
 # Allow autofix for all enabled rules (when `--fix`) is provided.

@@ -8,23 +8,28 @@ from acslib.ccure.filters import (
     PERSONNEL_LOOKUP_FIELDS,
     CLEARANCE_LOOKUP_FIELDS,
     RFUZZ,
+    ClearanceFilter,
     PersonnelFilter,
-    ClearanceFilter
 )
 
 
 def test_default_instance():
     personnel_filter = PersonnelFilter()
     assert personnel_filter.filter_fields == PERSONNEL_LOOKUP_FIELDS
-    assert personnel_filter.outer_bool == "AND"
-    assert personnel_filter.inner_bool == "OR"
+    assert personnel_filter.outer_bool == " AND "
+    assert personnel_filter.inner_bool == " OR "
     assert personnel_filter.term_operator == "LIKE"
-    assert personnel_filter.display_properties == ["FirstName", "MiddleName", "LastName"]
+    assert personnel_filter.display_properties == [
+        "FirstName",
+        "MiddleName",
+        "LastName",
+        "ObjectID",
+    ]
 
     clearance_filter = ClearanceFilter()
     assert clearance_filter.filter_fields == CLEARANCE_LOOKUP_FIELDS
-    assert clearance_filter.outer_bool == "AND"
-    assert clearance_filter.inner_bool == "OR"
+    assert clearance_filter.outer_bool == " AND "
+    assert clearance_filter.inner_bool == " OR "
     assert clearance_filter.term_operator == "LIKE"
     assert clearance_filter.display_properties == ["Name"]
 
@@ -37,8 +42,8 @@ def test_custom_instance():
         term_operator=TermOperators.EQUALS,
     )
     assert filter.filter_fields == {"Text1": NFUZZ, "Tex14": NFUZZ}
-    assert filter.outer_bool == "OR"
-    assert filter.inner_bool == "AND"
+    assert filter.outer_bool == " OR "
+    assert filter.inner_bool == " AND "
     assert filter.term_operator == "="
 
 
@@ -66,7 +71,7 @@ def test_multiple_terms():
 def test_update_display_properties():
     filter = PersonnelFilter()
     filter.update_display_properties(["EmailAddress"])
-    assert len(filter.display_properties) == 4
+    assert len(filter.display_properties) == 5
     assert "EmailAddress" in filter.display_properties
 
 

@@ -3,10 +3,10 @@ from numbers import Number
 
 from acslib.base import (
     ACSConnection,
-    ACSRequestException,
     ACSRequestData,
+    ACSRequestException,
     ACSRequestResponse,
-    status
+    status,
 )
 from acslib.base.connection import ACSRequestMethod
 from acslib.ccure.config import CcureConfigFactory
@@ -152,7 +152,6 @@ class CcureConnection(ACSConnection):
             self.logger.debug(f"CCure app server version: {response.get('appServerVersion')}")
         except ACSRequestException as e:
             self.logger.debug(f"Could not get CCure api version number: {e}")
-
 
     @staticmethod
     def encode_data(data: dict) -> str:

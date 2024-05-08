@@ -1,5 +1,5 @@
-from enum import Enum
 from abc import ABC, abstractmethod
+from enum import Enum
 
 
 class BooleanOperators(Enum):
@@ -13,11 +13,6 @@ class TermOperators(Enum):
 
 
 class ACSFilter(ABC):
-
     @abstractmethod
     def filter(self, search):
         pass
-
-
-
-

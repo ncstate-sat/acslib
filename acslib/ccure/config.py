@@ -1,6 +1,6 @@
 import os
 
-from acslib.base import ACSConfig, ACSConfigException
+from acslib.base.config import ACSConfig, ACSConfigException
 from acslib.ccure.endpoints import V2Endpoints
 
 
