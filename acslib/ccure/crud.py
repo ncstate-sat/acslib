@@ -29,11 +29,11 @@ class CcurePersonnel(CcureACS):
 
     def search(
         self,
-        terms: list = [],
+        terms: Optional[list] = None,
         search_filter: Optional[PersonnelFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
-        search_options: dict = {},
+        search_options: Optional[dict] = None,
     ) -> list:
         """
         Get a list of Personnel objects matching given search terms
@@ -54,7 +54,7 @@ class CcurePersonnel(CcureACS):
         )
 
     def count(
-        self, terms: Optional[list] = [], search_filter: Optional[PersonnelFilter] = None
+        self, terms: Optional[list] = None, search_filter: Optional[PersonnelFilter] = None
     ) -> int:
         """Get the total number of Personnel objects"""
         search_filter = search_filter or self.search_filter
@@ -64,16 +64,14 @@ class CcurePersonnel(CcureACS):
             search_options={"CountOnly": True},
         )
 
-    def update(self, personnel_id: int, update_data: dict) -> ACSRequestResponse:
+    def update(self, object_id: int, update_data: dict) -> ACSRequestResponse:
         """
         Edit properties of a personnel object
 
-        :param personnel_id: the Personnel object's CCure ID
+        :param object_id: the Personnel object's CCure ID
         :param update_data: maps Personnel properties to their new values
         """
-        return super().update(
-            object_type=self.type, object_id=personnel_id, update_data=update_data
-        )
+        return super().update(object_type=self.type, object_id=object_id, update_data=update_data)
 
     def create(self, create_data: PersonnelCreateData) -> ACSRequestResponse:
         """
@@ -189,11 +187,11 @@ class CcureClearance(CcureACS):
 
     def search(
         self,
-        terms: list = [],
+        terms: Optional[list] = None,
         search_filter: Optional[ClearanceFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
-        search_options: dict = {},
+        search_options: Optional[dict] = None,
     ) -> list:
         """
         Get a list of Clearance objects matching given search terms
@@ -213,7 +211,7 @@ class CcureClearance(CcureACS):
         )
 
     def count(
-        self, terms: Optional[list] = [], search_filter: Optional[ClearanceFilter] = None
+        self, terms: Optional[list] = None, search_filter: Optional[ClearanceFilter] = None
     ) -> int:
         """Get the number of Clearance objects matching the search terms"""
         search_filter = search_filter or self.search_filter
@@ -253,11 +251,11 @@ class CcureCredential(CcureACS):
 
     def search(
         self,
-        terms: Optional[list] = [],
+        terms: Optional[list] = None,
         search_filter: Optional[CredentialFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
-        search_options: dict = {},
+        search_options: Optional[dict] = None,
     ) -> list:
         """
         Get a list of Credential objects matching given search terms
@@ -277,7 +275,7 @@ class CcureCredential(CcureACS):
         )
 
     def count(
-        self, terms: Optional[list] = [], search_filter: Optional[CredentialFilter] = None
+        self, terms: Optional[list] = None, search_filter: Optional[CredentialFilter] = None
     ) -> int:
         """Get the number of Credential objects matching the search"""
         search_filter = search_filter or self.search_filter
@@ -330,11 +328,11 @@ class CcureClearanceItem(CcureACS):
     def search(
         self,
         item_type: ObjectType,
-        terms: Optional[list] = [],
+        terms: Optional[list] = None,
         search_filter: Optional[ClearanceItemFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
-        search_options: dict = {},
+        search_options: Optional[dict] = None,
     ) -> list:
         """
         Get a list of ClearanceItem objects matching given search terms
@@ -356,7 +354,7 @@ class CcureClearanceItem(CcureACS):
     def count(
         self,
         item_type: ObjectType,
-        terms: Optional[list] = [],
+        terms: Optional[list] = None,
         search_filter: Optional[PersonnelFilter] = None,
     ) -> int:
         """Get the total number of ClearanceItem objects"""

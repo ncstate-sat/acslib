@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 from acslib.base import AccessControlSystem, ACSRequestData, ACSRequestResponse, ACSRequestException
 from acslib.ccure.connection import CcureConnection, ACSRequestMethod
@@ -24,12 +24,12 @@ class CcureACS(AccessControlSystem):
         self,
         object_type: str,
         search_filter: CcureFilter,
-        terms: Optional[list] = None,
+        terms: Optional[list],
         page_size: Optional[int] = None,
         page_number: int = 1,
-        search_options: dict = {},
+        search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
-    ):
+    ) -> int | list:
         """
         Return CCure objects meeting the given criteria
 
@@ -37,6 +37,7 @@ class CcureACS(AccessControlSystem):
         search_filter: CcureFilter object specifying search query and display properties
         terms: search terms used to filter objects. Leave empty to include everything in results
         page_size: number of search results to include
+                     - defaults to the page_size value in acslib/ccure/config.py
         page_number: the page of search results to display. The first page is page 1.
         search_options: other options to include in the request_json. eg. "CountOnly"
         where_clause: sql-style WHERE clause to search objects. overrides `terms` if included.
@@ -48,8 +49,8 @@ class CcureACS(AccessControlSystem):
             "pageSize": page_size,
             "pageNumber": page_number,
             "DisplayProperties": search_filter.display_properties,
-            "WhereClause": where_clause or search_filter.filter(terms),
-        } | search_options
+            "WhereClause": where_clause or search_filter.filter(terms or []),
+        } | (search_options or {})
         response = self.connection.request(
             ACSRequestMethod.POST,
             request_data=ACSRequestData(
@@ -61,7 +62,7 @@ class CcureACS(AccessControlSystem):
         )
         return response.json
 
-    def get_property(self, object_type: str, object_id: int, property_name: str):
+    def get_property(self, object_type: str, object_id: int, property_name: str) -> Any:
         """Return the value of one property from one CCure object"""
         search_filter = CcureFilter(lookups={"ObjectID": NFUZZ}, display_properties=[property_name])
         response = self.search(
