@@ -4,7 +4,8 @@ from unittest.mock import patch
 import pytest
 
 from acslib.ccure.base import CcureACS, CcureConnection
-from acslib.ccure.filters import PersonnelFilter, SearchTypes
+from acslib.ccure import CcureAPI
+from acslib.ccure.filters import PersonnelFilter
 
 
 def test_default_ccure_acs(env_config, caplog):
@@ -25,26 +26,19 @@ def test_user_supplied_logger(env_config, caplog):
     assert "test:connection" in caplog.text
 
 
-@pytest.mark.skip(reason="ccure search no longer works this way")
-def test_default_ccure_search(env_config, personnel_response, caplog):
-    ccure = CcureACS()
-    with patch(
-        "acslib.ccure.base.CcureACS._search_people", return_value=personnel_response
-    ) as mock_search:
-        ccure.search(search_type=SearchTypes.PERSONNEL, terms=["test"])
-        mock_search.assert_called_with(["test"])
-    assert "Searching for personnel" in caplog.text
-
-
-@pytest.mark.skip(reason="ccure search no longer works this way")
-def test_ccure_search_with_filter(env_config, personnel_response, caplog):
-    ccure = CcureACS()
-    filter = PersonnelFilter()
-    with patch(
-        "acslib.ccure.base.CcureACS._search_people", return_value=personnel_response
-    ) as mock_search:
-        ccure.search(search_type=SearchTypes.PERSONNEL, terms=["test"], search_filter=filter)
-        mock_search.assert_called_with(["test"], filter)
+def test_ccure_personnel_search(env_config, personnel_response, ccure_connection, caplog):
+    ccure = CcureAPI(ccure_connection)
+    search_filter = PersonnelFilter(display_properties=["ObjectID", "FirstName"])
+    with patch("acslib.ccure.base.CcureACS.search", return_value=personnel_response) as mock_search:
+        ccure.personnel.search(terms=["test"], search_filter=search_filter)
+        mock_search.assert_called_with(
+            object_type="SoftwareHouse.NextGen.Common.SecurityObjects.Personnel",
+            search_filter=search_filter,
+            terms=["test"],
+            page_size=None,
+            page_number=1,
+            search_options=None,
+        )
     assert "Searching for personnel" in caplog.text
 
 

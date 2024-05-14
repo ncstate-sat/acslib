@@ -24,7 +24,7 @@ interface for interacting with them.
 
 ## Features
 
-* Currently supports Search for `Personnel`, `Clearances`, `Credentials`, and `ClearanceItem` in Ccure9k
+* Currently supports CRUD operations for `Personnel`, `Clearances`, `Credentials`, and `ClearanceItem` in Ccure9k, and all other Ccure object types.
 * Supports search by custom fields.
 
 ## Usage

@@ -9,7 +9,6 @@ from acslib.ccure.filters import (
     ClearanceItemFilter,
     CredentialFilter,
     PersonnelFilter,
-    NFUZZ,
 )
 from acslib.ccure.data_models import (
     ClearanceItemCreateData,
