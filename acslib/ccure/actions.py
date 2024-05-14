@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from acslib.base import ACSRequestResponse
-from acslib.ccure import CcureACS
+from acslib.ccure.base import CcureACS
 from acslib.ccure.connection import CcureConnection
 from acslib.ccure.filters import (
     CcureFilter,
