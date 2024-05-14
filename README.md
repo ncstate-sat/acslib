@@ -234,3 +234,20 @@ response = ccure.ccure_object.search(
     terms=[5001]
 )
 ```
+
+### Other common actions
+
+Use `ccure.action` to perform some common tasks like assigning or revoking clearances or getting personnel images.
+
+#### Assign a clearance
+
+```python
+from acslib import CcureAPI
+
+# assign clearances 5002 and 5003 to person 5005
+ccure = CcureAPI()
+response = ccure.action.personnel.assign_clearances(
+    personnel_id=5005,
+    clearance_ids=[5002, 5003],
+)
+```
