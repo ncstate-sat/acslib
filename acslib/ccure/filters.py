@@ -28,15 +28,10 @@ NFUZZ = no_fuzz
 PERSONNEL_LOOKUP_FIELDS = {"FirstName": FUZZ, "LastName": FUZZ}
 CLEARANCE_LOOKUP_FIELDS = {"Name": FUZZ}
 CREDENTIAL_LOOKUP_FIELDS = {"Name": FUZZ}
+CLEARANCE_ITEM_LOOKUP_FIELDS = {"Name": FUZZ}
 
 
-class SearchTypes(Enum):
-    PERSONNEL = "personnel"
-    CLEARANCE = "clearance"
-    CREDENTIAL = "credential"
-
-
-class BaseCcureFilter(ACSFilter):
+class CcureFilter(ACSFilter):
     """Base CCure Filter
     :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
@@ -47,17 +42,18 @@ class BaseCcureFilter(ACSFilter):
 
     def __init__(
         self,
-        lookups: dict[str, callable] = None,
+        lookups: dict[str, callable] = {"ObjectID": NFUZZ},
         outer_bool=BooleanOperators.AND,
         inner_bool=BooleanOperators.OR,
         term_operator=TermOperators.FUZZY,
+        display_properties: list[str] = [],
     ):
         self.filter_fields = lookups
         self.outer_bool = outer_bool.value
         self.inner_bool = inner_bool.value
         self.term_operator = term_operator.value
         #: List of properties from CCURE to be included in the CCURE response
-        self.display_properties = []
+        self.display_properties = display_properties
 
     def _compile_term(self, term) -> str:
         """Get all parts of the query for one search term"""
@@ -72,11 +68,13 @@ class BaseCcureFilter(ACSFilter):
             raise TypeError("Properties must be a list of strings")
         self.display_properties += properties
 
-    def filter(self, search):
-        pass
+    def filter(self, search: list[str]) -> str:
+        if not isinstance(search, list):
+            raise TypeError("Search must be a list of strings")
+        return self.outer_bool.join(self._compile_term(term) for term in search)
 
 
-class PersonnelFilter(BaseCcureFilter):
+class PersonnelFilter(CcureFilter):
     """Basic CCure Personnel Filter
     :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
@@ -102,13 +100,8 @@ class PersonnelFilter(BaseCcureFilter):
         if display_properties is not None:
             self.display_properties = display_properties
 
-    def filter(self, search: list[str]) -> str:
-        if not isinstance(search, list):
-            raise TypeError("Search must be a list of strings")
-        return self.outer_bool.join(self._compile_term(term) for term in search)
 
-
-class ClearanceFilter(BaseCcureFilter):
+class ClearanceFilter(CcureFilter):
     """Basic CCure Clearance Filter
     :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
@@ -134,13 +127,8 @@ class ClearanceFilter(BaseCcureFilter):
         if display_properties is not None:
             self.display_properties = display_properties
 
-    def filter(self, search: list[str]) -> str:
-        if not isinstance(search, list):
-            raise TypeError("Search must be a list of strings")
-        return self.outer_bool.join(self._compile_term(term) for term in search)
 
-
-class CredentialFilter(BaseCcureFilter):
+class CredentialFilter(CcureFilter):
     """Basic CCure Credential Filter
     :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
@@ -166,13 +154,8 @@ class CredentialFilter(BaseCcureFilter):
         if display_properties is not None:
             self.display_properties = display_properties
 
-    def filter(self, search: list) -> str:
-        if not isinstance(search, list):
-            raise TypeError("`search` must be a list of search terms")
-        return self.outer_bool.join(self._compile_term(term) for term in search)
 
-
-class ClearanceItemFilter(BaseCcureFilter):
+class ClearanceItemFilter(CcureFilter):
     """Basic CCure ClearanceItem Filter
     :param lookups: Dict containing searchable field names and their lookup functions
     :param outer_bool: Boolean operator to use between search terms
@@ -190,15 +173,10 @@ class ClearanceItemFilter(BaseCcureFilter):
         term_operator=TermOperators.FUZZY,
         display_properties: Optional[list[str]] = None,
     ):
-        self.filter_fields = lookups or CREDENTIAL_LOOKUP_FIELDS
+        self.filter_fields = lookups or CLEARANCE_ITEM_LOOKUP_FIELDS
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
         self.display_properties = ["Name"]
         if display_properties is not None:
             self.display_properties = display_properties
-
-    def filter(self, search: list) -> str:
-        if not isinstance(search, list):
-            raise TypeError("`search` must be a list of search terms")
-        return self.outer_bool.join(self._compile_term(term) for term in search)
