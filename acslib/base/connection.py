@@ -21,9 +21,17 @@ class ACSRequestException(Exception):
     def __init__(self, status_code: int, log_message: str):
         self.status_code = status_code
         self.message = log_message
+        self.exception_name = "RequestException"
 
     def __str__(self):
-        return f"RequestException: {self.status_code} {self.message}"
+        return f"{self.exception_name}: {self.status_code} {self.message}"
+
+
+class ACSNotImplementedException(ACSRequestException):
+    def __init__(self, log_message: str):
+        self.status_code = status.HTTP_501_NOT_IMPLEMENTED
+        self.message = log_message
+        self.exception_name = "NotImplementedException"
 
 
 class ACSRequestMethod(Enum):

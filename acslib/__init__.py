@@ -4,4 +4,4 @@ __author__ = """Jeremy Gibson"""
 __email__ = "jmgibso3@ncsu.edu"
 __version__ = "0.1.0"
 
-from acslib.ccure.crud import CcureAPI
+from acslib.ccure import CcureAPI

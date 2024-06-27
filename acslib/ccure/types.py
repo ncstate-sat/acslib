@@ -2,19 +2,31 @@ from enum import Enum
 
 
 class ObjectType(Enum):
+    CLEARANCE = "clearance"
+    CLEARANCE_ASSIGNMENT = "clearance assignment"
+    CREDENTIAL = "credential"
     DOOR = "door"
     ELEVATOR = "elevator"
     IMAGE = "image"
+    ISTAR_CONTROLLER = "istar controller"
     PERSONNEL = "personnel"
 
     @property
     def complete(self):
+        if self == self.CLEARANCE:
+            return "SoftwareHouse.NextGen.Common.SecurityObjects.Clearance"
+        if self == self.CLEARANCE_ASSIGNMENT:
+            return "SoftwareHouse.NextGen.Common.SecurityObjects.PersonnelClearancePair"
+        if self == self.CREDENTIAL:
+            return "SoftwareHouse.NextGen.Common.SecurityObjects.Credential"
         if self == self.DOOR:
             return "SoftwareHouse.NextGen.Common.SecurityObjects.Door"
         if self == self.ELEVATOR:
             return "SoftwareHouse.NextGen.Common.SecurityObjects.Elevator"
         if self == self.IMAGE:
             return "SoftwareHouse.NextGen.Common.SecurityObjects.Images"
+        if self == self.ISTAR_CONTROLLER:
+            return "SoftwareHouse.NextGen.Common.SecurityObjects.iStarController"
         if self == self.PERSONNEL:
             return "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel"
 
