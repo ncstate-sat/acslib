@@ -65,7 +65,7 @@ ccure.personnel.update(5001, {"Text14": "new text here", "MiddleName": "Shaquill
 
 ```python
 from acslib import CcureAPI
-from acslib.ccure.types import PersonnelCreateData as pcd
+from acslib.ccure.data_models import PersonnelCreateData as pcd
 
 ccure = CcureAPI()
 new_person_data = pcd(FirstName="Kenny", LastName="Smith", Text1="001132808")
@@ -190,7 +190,8 @@ response = ccure.clearance_item.update(ObjectType.DOOR.complete, 5000, update_da
 
 ```python
 from acslib import CcureAPI
-from acslib.ccure.types import ClearanceItemCreateData, ObjectType
+from acslib.ccure.data_models import ClearanceItemCreateData
+from acslib.ccure.types import ObjectType
 
 # create a new elevator
 ccure = CcureAPI()

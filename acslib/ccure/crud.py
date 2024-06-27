@@ -77,7 +77,13 @@ class CcurePersonnel(CcureACS):
         create_data must contain a 'LastName' property.
         """
         create_data_dict = create_data.model_dump()
-        request_data = create_data_dict | {"ClassType": self.type}
+        property_names = list(create_data_dict)
+        property_values = list(create_data_dict.values())
+        request_data = {
+            "Type": self.type,
+            "PropertyNames": property_names,
+            "PropertyValues": property_values,
+        }
         return super().create(request_data=request_data)
 
     def delete(self, personnel_id: int) -> ACSRequestResponse:
