@@ -8,7 +8,7 @@ from acslib.ccure.filters import CcureFilter, NFUZZ
 class CcureACS(AccessControlSystem):
     """Base class for CCure API interactions"""
 
-    def __init__(self, connection: Optional[CcureConnection] = None):
+    def __init__(self, connection: CcureConnection):
         super().__init__(connection=connection)
         if not self.connection:
             self.connection = CcureConnection()

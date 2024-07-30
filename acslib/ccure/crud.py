@@ -19,7 +19,7 @@ from acslib.ccure.types import ObjectType
 
 
 class CcurePersonnel(CcureACS):
-    def __init__(self, connection: Optional[CcureConnection] = None):
+    def __init__(self, connection: CcureConnection):
         super().__init__(connection)
         self.search_filter = PersonnelFilter()
         self.type = ObjectType.PERSONNEL.complete
