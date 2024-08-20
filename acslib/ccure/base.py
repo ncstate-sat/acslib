@@ -1,3 +1,4 @@
+from numbers import Number
 from typing import Optional, Any
 
 from acslib.base import AccessControlSystem, ACSRequestData, ACSRequestResponse, ACSRequestException
@@ -23,10 +24,11 @@ class CcureACS(AccessControlSystem):
     def search(
         self,
         object_type: str,
-        search_filter: CcureFilter,
-        terms: Optional[list],
+        search_filter: CcureFilter,  # TODO shouldn't be required if where_clause
+        terms: Optional[list] = None,  # TODO move above search_filter
         page_size: Optional[int] = None,
         page_number: int = 1,
+        timeout: Number = 0,
         search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
     ) -> int | list:
@@ -59,6 +61,7 @@ class CcureACS(AccessControlSystem):
                 request_json=request_json,
                 headers=self.connection.base_headers,
             ),
+            timeout=timeout,
         )
         return response.json
 

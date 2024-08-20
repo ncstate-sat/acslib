@@ -37,15 +37,16 @@ class PersonnelAction(CcureACS):
     def revoke_clearances(self, personnel_id: int, clearance_ids: list[int]) -> ACSRequestResponse:
         """
         Revoke a person's clearances
-        Two steps: 1: Get the PersonnelClearancePair object IDs
-                   2: Remove those PersonnelClearancePair objects
+        Two steps:
+            1: Get the PersonnelClearancePair object IDs
+            2: Remove those PersonnelClearancePair objects
         """
 
         # get PersonnelClearancePair object IDs
         clearance_query = " OR ".join(
             f"ClearanceID = {clearance_id}" for clearance_id in clearance_ids
         )
-        search_filter = CcureFilter(display_properties=["PersonnelID"])
+        search_filter = CcureFilter(display_properties=["PersonnelID", "ObjectID"])
         clearance_assignments = super().search(
             object_type=ObjectType.CLEARANCE_ASSIGNMENT.complete,
             search_filter=search_filter,
@@ -55,18 +56,19 @@ class PersonnelAction(CcureACS):
         )
         assignment_ids = [assignment.get("ObjectID") for assignment in clearance_assignments]
 
-        # remove PersonnelClearancePair objects
-        return self.remove_children(
-            parent_type=self.type,
-            parent_id=personnel_id,
-            child_type=ObjectType.CLEARANCE_ASSIGNMENT.complete,
-            child_ids=assignment_ids,
-        )
+        if assignment_ids:
+            # remove PersonnelClearancePair objects
+            return self.remove_children(
+                parent_type=self.type,
+                parent_id=personnel_id,
+                child_type=ObjectType.CLEARANCE_ASSIGNMENT.complete,
+                child_ids=assignment_ids,
+            )
 
     def get_assigned_clearances(
         self, personnel_id: int, page_size=100, page_number=1
     ) -> list[dict]:
-        """Get the clearance assignments associated with a person"""
+        """Get personnel/clearance pairs associated with the given person"""
         search_filter = CcureFilter(
             lookups={"PersonnelID": NFUZZ}, display_properties=["PersonnelID", "ClearanceID"]
         )
@@ -120,6 +122,7 @@ class ClearanceAction(CcureACS):
         self.type = ObjectType.CLEARANCE.complete
 
     def get_assignees(self, clearance_id: int, page_size=100, page_number=1) -> list[dict]:
+        """Get clearance/personnel pairs belonging to the given clearance"""
         search_filter = CcureFilter(
             lookups={"ClearanceID": NFUZZ}, display_properties=["PersonnelID", "ClearanceID"]
         )
@@ -132,7 +135,7 @@ class ClearanceAction(CcureACS):
         )
 
 
-class CcureAction(CcureACS):
+class CcureAction(CcureACS):  # TODO does this really need to inherit anything?
     def __init__(self, connection: Optional[CcureConnection] = None):
         self.personnel = PersonnelAction(connection)
         self.clearance = ClearanceAction(connection)

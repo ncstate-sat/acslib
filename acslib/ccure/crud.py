@@ -1,4 +1,5 @@
-from typing import Optional
+from numbers import Number
+from typing import Any, Optional
 
 from acslib.base import ACSRequestResponse
 from acslib.base.connection import ACSNotImplementedException
@@ -30,7 +31,9 @@ class CcurePersonnel(CcureACS):
         search_filter: Optional[PersonnelFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
+        timeout: Number = 0,  # TODO add this to the other object types.
         search_options: Optional[dict] = None,
+        where_clause: Optional[str] = None,  # TODO add this to the other object types.
     ) -> list:
         """
         Get a list of Personnel objects matching given search terms
@@ -47,8 +50,14 @@ class CcurePersonnel(CcureACS):
             terms=terms,
             page_size=page_size,
             page_number=page_number,
+            timeout=timeout,
             search_options=search_options,
+            where_clause=where_clause,
         )
+
+    # TODO add get_property to other crud classes
+    def get_property(self, object_id: int, property_name: str) -> Any:
+        return super().get_property(self.type, object_id, property_name)
 
     def count(
         self, terms: Optional[list] = None, search_filter: Optional[PersonnelFilter] = None
@@ -103,7 +112,9 @@ class CcureClearance(CcureACS):
         search_filter: Optional[ClearanceFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
+        timeout: Number = 0,
         search_options: Optional[dict] = None,
+        # TODO where_clause
     ) -> list:
         """
         Get a list of Clearance objects matching given search terms
@@ -119,8 +130,13 @@ class CcureClearance(CcureACS):
             terms=terms,
             page_size=page_size,
             page_number=page_number,
+            timeout=timeout,
             search_options=search_options,
         )
+
+    # TODO add get_property to other crud classes
+    def get_property(self, object_id: int, property_name: str) -> Any:
+        return super().get_property(self.type, object_id, property_name)
 
     def count(
         self, terms: Optional[list] = None, search_filter: Optional[ClearanceFilter] = None
