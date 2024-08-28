@@ -5,11 +5,13 @@ class ObjectType(Enum):
     CLEARANCE = "clearance"
     CLEARANCE_ASSIGNMENT = "clearance assignment"
     CREDENTIAL = "credential"
+    CLEARANCE_ITEM = "clearance item"
     DOOR = "door"
     ELEVATOR = "elevator"
     IMAGE = "image"
     ISTAR_CONTROLLER = "istar controller"
     PERSONNEL = "personnel"
+    TIME_SPEC = "time spec"
 
     @property
     def complete(self):
@@ -19,6 +21,8 @@ class ObjectType(Enum):
             return "SoftwareHouse.NextGen.Common.SecurityObjects.PersonnelClearancePair"
         if self == self.CREDENTIAL:
             return "SoftwareHouse.NextGen.Common.SecurityObjects.Credential"
+        if self == self.CLEARANCE_ITEM:
+            return "SoftwareHouse.NextGen.Common.SecurityObjects.ClearanceItem"
         if self == self.DOOR:
             return "SoftwareHouse.NextGen.Common.SecurityObjects.Door"
         if self == self.ELEVATOR:
@@ -29,6 +33,8 @@ class ObjectType(Enum):
             return "SoftwareHouse.NextGen.Common.SecurityObjects.iStarController"
         if self == self.PERSONNEL:
             return "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel"
+        if self == self.TIME_SPEC:
+            return "SoftwareHouse.CrossFire.Common.Objects.TimeSpec"
 
 
 class ImageType(Enum):

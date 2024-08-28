@@ -243,12 +243,14 @@ class CcureClearanceItem(CcureACS):
 
     def search(
         self,
-        item_type: ObjectType,
+        item_type: str,
         terms: Optional[list] = None,
         search_filter: Optional[ClearanceItemFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
+        timeout: Number = 0,
         search_options: Optional[dict] = None,
+        where_clause: Optional[str] = None,
     ) -> list:
         """
         Get a list of ClearanceItem objects matching given search terms
@@ -259,30 +261,32 @@ class CcureClearanceItem(CcureACS):
         self.logger.info("Searching for clearance items")
         search_filter = search_filter or self.search_filter
         return super().search(
-            object_type=item_type.complete,
+            object_type=item_type,
             search_filter=search_filter,
             terms=terms,
             page_size=page_size,
             page_number=page_number,
+            timeout=timeout,
             search_options=search_options,
+            where_clause=where_clause,
         )
 
     def count(
         self,
-        item_type: ObjectType,
+        item_type: str,
         terms: Optional[list] = None,
         search_filter: Optional[PersonnelFilter] = None,
     ) -> int:
         """Get the total number of ClearanceItem objects"""
         search_filter = search_filter or self.search_filter
         return self.search(
-            item_type=item_type.complete,
+            item_type=item_type,
             search_filter=search_filter,
             terms=terms,
             search_options={"CountOnly": True},
         )
 
-    def update(self, item_type: ObjectType, item_id: int, update_data: dict) -> ACSRequestResponse:
+    def update(self, item_type: str, item_id: int, update_data: dict) -> ACSRequestResponse:
         """
         Edit properties of a ClearanceItem object
 
@@ -291,12 +295,12 @@ class CcureClearanceItem(CcureACS):
         :param update_data: maps ClearanceItem properties to their new values
         """
         return super().update(
-            object_type=item_type.complete, object_id=item_id, update_data=update_data
+            object_type=item_type, object_id=item_id, update_data=update_data
         )
 
     def create(
         self,
-        item_type: ObjectType,
+        item_type: str,
         controller_id: int,
         create_data: ClearanceItemCreateData,
     ) -> ACSRequestResponse:
@@ -310,12 +314,12 @@ class CcureClearanceItem(CcureACS):
         create_data_dict = create_data.model_dump()
 
         return self.add_children(
-            parent_type=ObjectType.ISTAR_CONTROLLER.complete,
+            parent_type=ObjectType.ISTAR_CONTROLLER,
             parent_id=controller_id,
             child_type=item_type.complete,
             child_configs=[create_data_dict],
         )
 
-    def delete(self, item_type: ObjectType, item_id: int) -> ACSRequestResponse:
+    def delete(self, item_type: str, item_id: int) -> ACSRequestResponse:
         """Delete a ClearanceItem object by its CCure ID"""
-        return super().delete(object_type=item_type.complete, object_id=item_id)
+        return super().delete(object_type=item_type, object_id=item_id)
