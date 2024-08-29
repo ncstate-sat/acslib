@@ -21,8 +21,8 @@ class CcureConnection(ACSConnection):
         :param kwargs:
         """
         self._session_id = None
-        if con_logger := kwargs.get("logger"):
-            self.logger = con_logger
+        if conn_logger := kwargs.get("logger"):
+            self.logger = conn_logger
         else:
             self.logger = logging.getLogger(__name__)
 
