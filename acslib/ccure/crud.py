@@ -303,9 +303,7 @@ class CcureClearanceItem(CcureACS):
         :param item_id: the ClearanceItem object's CCure ID
         :param update_data: maps ClearanceItem properties to their new values
         """
-        return super().update(
-            object_type=item_type, object_id=item_id, update_data=update_data
-        )
+        return super().update(object_type=item_type, object_id=item_id, update_data=update_data)
 
     def create(
         self,
