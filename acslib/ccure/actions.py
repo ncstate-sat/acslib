@@ -135,7 +135,7 @@ class ClearanceAction(CcureACS):
         )
 
 
-class CcureAction():
+class CcureAction:
     def __init__(self, connection: Optional[CcureConnection] = None):
         self.personnel = PersonnelAction(connection)
         self.clearance = ClearanceAction(connection)
