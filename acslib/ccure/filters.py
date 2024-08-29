@@ -1,4 +1,3 @@
-from enum import Enum  # TODO kill
 from typing import Optional
 
 from acslib.base.search import ACSFilter, BooleanOperators, TermOperators

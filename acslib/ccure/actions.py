@@ -135,7 +135,7 @@ class ClearanceAction(CcureACS):
         )
 
 
-class CcureAction(CcureACS):  # TODO does this really need to inherit anything?
+class CcureAction():
     def __init__(self, connection: Optional[CcureConnection] = None):
         self.personnel = PersonnelAction(connection)
         self.clearance = ClearanceAction(connection)

@@ -31,9 +31,9 @@ class CcurePersonnel(CcureACS):
         search_filter: Optional[PersonnelFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
-        timeout: Number = 0,  # TODO add this to the other object types.
+        timeout: Number = 0,
         search_options: Optional[dict] = None,
-        where_clause: Optional[str] = None,  # TODO add this to the other object types.
+        where_clause: Optional[str] = None,
     ) -> list:
         """
         Get a list of Personnel objects matching given search terms
@@ -55,7 +55,6 @@ class CcurePersonnel(CcureACS):
             where_clause=where_clause,
         )
 
-    # TODO add get_property to other crud classes
     def get_property(self, object_id: int, property_name: str) -> Any:
         return super().get_property(self.type, object_id, property_name)
 
@@ -114,7 +113,7 @@ class CcureClearance(CcureACS):
         page_number: int = 1,
         timeout: Number = 0,
         search_options: Optional[dict] = None,
-        # TODO where_clause
+        where_clause: Optional[str] = None,
     ) -> list:
         """
         Get a list of Clearance objects matching given search terms
@@ -132,9 +131,9 @@ class CcureClearance(CcureACS):
             page_number=page_number,
             timeout=timeout,
             search_options=search_options,
+            where_clause=where_clause,
         )
 
-    # TODO add get_property to other crud classes
     def get_property(self, object_id: int, property_name: str) -> Any:
         return super().get_property(self.type, object_id, property_name)
 
@@ -171,7 +170,9 @@ class CcureCredential(CcureACS):
         search_filter: Optional[CredentialFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
+        timeout: int = 0,
         search_options: Optional[dict] = None,
+        where_clause: Optional[str] = None,
     ) -> list:
         """
         Get a list of Credential objects matching given search terms
@@ -187,8 +188,13 @@ class CcureCredential(CcureACS):
             terms=terms,
             page_size=page_size,
             page_number=page_number,
+            timeout=timeout,
             search_options=search_options,
+            where_clause=where_clause,
         )
+
+    def get_property(self, object_id: int, property_name: str) -> Any:
+        return super().get_property(self.type, object_id, property_name)
 
     def count(
         self, terms: Optional[list] = None, search_filter: Optional[CredentialFilter] = None
@@ -270,6 +276,9 @@ class CcureClearanceItem(CcureACS):
             search_options=search_options,
             where_clause=where_clause,
         )
+
+    def get_property(self, object_id: int, property_name: str) -> Any:
+        return super().get_property(self.type, object_id, property_name)
 
     def count(
         self,
