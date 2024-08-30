@@ -61,6 +61,6 @@ def test_ccure_logout(ccure_connection, response_w_session):
         "acslib.base.connection.ACSConnection._make_request", return_value=response_w_session
     ):
         session_id = ccure_connection.login()
-        assert ccure_connection.session_id == session_id
+        assert ccure_connection._session_id == session_id
         ccure_connection.logout()
-        assert ccure_connection.session_id is None
+        assert ccure_connection._session_id is None

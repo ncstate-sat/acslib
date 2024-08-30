@@ -143,7 +143,7 @@ class CcureConnection(ACSConnection):
     def log_session_details(self):
         """Log session ID and the api version number"""
         version_url = self.config.base_url + self.config.endpoints.VERSIONS
-        self.logger.error(f"Session ID: {self.session_id}")
+        self.logger.error(f"Session ID: {self._session_id}")
         try:
             response = self.request(
                 ACSRequestMethod.POST,
