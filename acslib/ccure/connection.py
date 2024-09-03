@@ -70,7 +70,6 @@ class CcureConnection(ACSConnection):
 
     def logout(self):
         """Log out of the CCure session"""
-        print(f"SEssion {self._session_id}")
         if self._session_id:
             self.logger.debug(f"Logging out of CCure session: {self._session_id}")
             try:
