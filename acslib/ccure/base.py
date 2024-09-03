@@ -1,3 +1,4 @@
+from numbers import Number
 from typing import Optional, Any
 
 from acslib.base import AccessControlSystem, ACSRequestData, ACSRequestResponse, ACSRequestException
@@ -8,7 +9,7 @@ from acslib.ccure.filters import CcureFilter, NFUZZ
 class CcureACS(AccessControlSystem):
     """Base class for CCure API interactions"""
 
-    def __init__(self, connection: Optional[CcureConnection] = None):
+    def __init__(self, connection: Optional[CcureConnection]):
         super().__init__(connection=connection)
         if not self.connection:
             self.connection = CcureConnection()
@@ -23,10 +24,11 @@ class CcureACS(AccessControlSystem):
     def search(
         self,
         object_type: str,
-        search_filter: CcureFilter,
-        terms: Optional[list],
+        terms: Optional[list] = None,
+        search_filter: Optional[CcureFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
+        timeout: Number = 0,
         search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
     ) -> int | list:
@@ -42,6 +44,8 @@ class CcureACS(AccessControlSystem):
         search_options: other options to include in the request_json. eg. "CountOnly"
         where_clause: sql-style WHERE clause to search objects. overrides `terms` if included.
         """
+        if search_filter is None and not where_clause:
+            raise ACSRequestException(400, "A search filter or where clause is required.")
         if page_size is None:
             page_size = self.config.page_size
         request_json = {
@@ -59,6 +63,7 @@ class CcureACS(AccessControlSystem):
                 request_json=request_json,
                 headers=self.connection.base_headers,
             ),
+            timeout=timeout,
         )
         return response.json
 

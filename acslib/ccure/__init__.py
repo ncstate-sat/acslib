@@ -16,9 +16,10 @@ from acslib.ccure.filters import ClearanceFilter, PersonnelFilter, CredentialFil
 
 class CcureAPI:
     def __init__(self, connection: Optional[CcureConnection] = None):
-        self.personnel = CcurePersonnel(connection)
-        self.clearance = CcureClearance(connection)
-        self.credential = CcureCredential(connection)
-        self.clearance_item = CcureClearanceItem(connection)
-        self.action = CcureAction(connection)
-        self.ccure_object = CcureACS(connection)
+        self.connection = connection or CcureConnection()
+        self.personnel = CcurePersonnel(self.connection)
+        self.clearance = CcureClearance(self.connection)
+        self.credential = CcureCredential(self.connection)
+        self.clearance_item = CcureClearanceItem(self.connection)
+        self.action = CcureAction(self.connection)
+        self.ccure_object = CcureACS(self.connection)

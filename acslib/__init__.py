@@ -5,3 +5,4 @@ __email__ = "jmgibso3@ncsu.edu"
 __version__ = "0.1.0"
 
 from acslib.ccure import CcureAPI
+from .base.search import BooleanOperators, TermOperators

@@ -1,4 +1,5 @@
-from typing import Optional
+from numbers import Number
+from typing import Any, Optional
 
 from acslib.base import ACSRequestResponse
 from acslib.base.connection import ACSNotImplementedException
@@ -19,7 +20,7 @@ from acslib.ccure.types import ObjectType
 
 
 class CcurePersonnel(CcureACS):
-    def __init__(self, connection: Optional[CcureConnection] = None):
+    def __init__(self, connection: CcureConnection):
         super().__init__(connection)
         self.search_filter = PersonnelFilter()
         self.type = ObjectType.PERSONNEL.complete
@@ -30,7 +31,9 @@ class CcurePersonnel(CcureACS):
         search_filter: Optional[PersonnelFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
+        timeout: Number = 0,
         search_options: Optional[dict] = None,
+        where_clause: Optional[str] = None,
     ) -> list:
         """
         Get a list of Personnel objects matching given search terms
@@ -47,8 +50,13 @@ class CcurePersonnel(CcureACS):
             terms=terms,
             page_size=page_size,
             page_number=page_number,
+            timeout=timeout,
             search_options=search_options,
+            where_clause=where_clause,
         )
+
+    def get_property(self, object_id: int, property_name: str) -> Any:
+        return super().get_property(self.type, object_id, property_name)
 
     def count(
         self, terms: Optional[list] = None, search_filter: Optional[PersonnelFilter] = None
@@ -103,7 +111,9 @@ class CcureClearance(CcureACS):
         search_filter: Optional[ClearanceFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
+        timeout: Number = 0,
         search_options: Optional[dict] = None,
+        where_clause: Optional[str] = None,
     ) -> list:
         """
         Get a list of Clearance objects matching given search terms
@@ -119,8 +129,13 @@ class CcureClearance(CcureACS):
             terms=terms,
             page_size=page_size,
             page_number=page_number,
+            timeout=timeout,
             search_options=search_options,
+            where_clause=where_clause,
         )
+
+    def get_property(self, object_id: int, property_name: str) -> Any:
+        return super().get_property(self.type, object_id, property_name)
 
     def count(
         self, terms: Optional[list] = None, search_filter: Optional[ClearanceFilter] = None
@@ -155,7 +170,9 @@ class CcureCredential(CcureACS):
         search_filter: Optional[CredentialFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
+        timeout: int = 0,
         search_options: Optional[dict] = None,
+        where_clause: Optional[str] = None,
     ) -> list:
         """
         Get a list of Credential objects matching given search terms
@@ -171,8 +188,13 @@ class CcureCredential(CcureACS):
             terms=terms,
             page_size=page_size,
             page_number=page_number,
+            timeout=timeout,
             search_options=search_options,
+            where_clause=where_clause,
         )
+
+    def get_property(self, object_id: int, property_name: str) -> Any:
+        return super().get_property(self.type, object_id, property_name)
 
     def count(
         self, terms: Optional[list] = None, search_filter: Optional[CredentialFilter] = None
@@ -227,12 +249,14 @@ class CcureClearanceItem(CcureACS):
 
     def search(
         self,
-        item_type: ObjectType,
+        item_type: str,
         terms: Optional[list] = None,
         search_filter: Optional[ClearanceItemFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
+        timeout: Number = 0,
         search_options: Optional[dict] = None,
+        where_clause: Optional[str] = None,
     ) -> list:
         """
         Get a list of ClearanceItem objects matching given search terms
@@ -243,30 +267,35 @@ class CcureClearanceItem(CcureACS):
         self.logger.info("Searching for clearance items")
         search_filter = search_filter or self.search_filter
         return super().search(
-            object_type=item_type.complete,
+            object_type=item_type,
             search_filter=search_filter,
             terms=terms,
             page_size=page_size,
             page_number=page_number,
+            timeout=timeout,
             search_options=search_options,
+            where_clause=where_clause,
         )
+
+    def get_property(self, object_id: int, property_name: str) -> Any:
+        return super().get_property(self.type, object_id, property_name)
 
     def count(
         self,
-        item_type: ObjectType,
+        item_type: str,
         terms: Optional[list] = None,
         search_filter: Optional[PersonnelFilter] = None,
     ) -> int:
         """Get the total number of ClearanceItem objects"""
         search_filter = search_filter or self.search_filter
         return self.search(
-            item_type=item_type.complete,
+            item_type=item_type,
             search_filter=search_filter,
             terms=terms,
             search_options={"CountOnly": True},
         )
 
-    def update(self, item_type: ObjectType, item_id: int, update_data: dict) -> ACSRequestResponse:
+    def update(self, item_type: str, item_id: int, update_data: dict) -> ACSRequestResponse:
         """
         Edit properties of a ClearanceItem object
 
@@ -274,13 +303,11 @@ class CcureClearanceItem(CcureACS):
         :param item_id: the ClearanceItem object's CCure ID
         :param update_data: maps ClearanceItem properties to their new values
         """
-        return super().update(
-            object_type=item_type.complete, object_id=item_id, update_data=update_data
-        )
+        return super().update(object_type=item_type, object_id=item_id, update_data=update_data)
 
     def create(
         self,
-        item_type: ObjectType,
+        item_type: str,
         controller_id: int,
         create_data: ClearanceItemCreateData,
     ) -> ACSRequestResponse:
@@ -294,12 +321,12 @@ class CcureClearanceItem(CcureACS):
         create_data_dict = create_data.model_dump()
 
         return self.add_children(
-            parent_type=ObjectType.ISTAR_CONTROLLER.complete,
+            parent_type=ObjectType.ISTAR_CONTROLLER,
             parent_id=controller_id,
             child_type=item_type.complete,
             child_configs=[create_data_dict],
         )
 
-    def delete(self, item_type: ObjectType, item_id: int) -> ACSRequestResponse:
+    def delete(self, item_type: str, item_id: int) -> ACSRequestResponse:
         """Delete a ClearanceItem object by its CCure ID"""
-        return super().delete(object_type=item_type.complete, object_id=item_id)
+        return super().delete(object_type=item_type, object_id=item_id)

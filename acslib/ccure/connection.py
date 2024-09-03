@@ -1,5 +1,6 @@
 import logging
 from numbers import Number
+from typing import Optional
 
 from acslib.base import (
     ACSConnection,
@@ -19,9 +20,9 @@ class CcureConnection(ACSConnection):
         Parameters:
         :param kwargs:
         """
-        self.session_id = None
-        if con_logger := kwargs.get("logger"):
-            self.logger = con_logger
+        self._session_id = None
+        if conn_logger := kwargs.get("logger"):
+            self.logger = conn_logger
         else:
             self.logger = logging.getLogger(__name__)
 
@@ -31,10 +32,16 @@ class CcureConnection(ACSConnection):
         super().__init__(**kwargs)
 
     @property
+    def session_id(self) -> str:
+        if self._session_id:
+            return self._session_id
+        return self.login()
+
+    @property
     def base_headers(self):
         """Headers required for each request to CCure"""
         return {
-            "session-id": self.get_session_id(),
+            "session-id": self.session_id,
             "Access-Control-Expose-Headers": "session-id",
         }
 
@@ -52,40 +59,33 @@ class CcureConnection(ACSConnection):
                     data=self.config.connection_data,
                 ),
             )
-            self.session_id = response.headers["session-id"]
-            self.logger.debug(f"Fetched new Session ID: {self.session_id}")
+            self._session_id = response.headers["session-id"]
+            self.logger.debug(f"Fetched new Session ID: {self._session_id}")
         except ACSRequestException as e:
             self.logger.error(f"Error Fetching Session ID: {e}")
             self.log_session_details()
             self.logger.debug(f"Connection data: {self.config.connection_data}")
             raise e
-        return self.session_id
+        return self._session_id
 
     def logout(self):
         """Log out of the CCure session"""
-        if self.session_id:
-            self.logger.debug(f"Logging out of CCure session: {self.session_id}")
+        if self._session_id:
+            self.logger.debug(f"Logging out of CCure session: {self._session_id}")
             try:
                 self.request(
                     ACSRequestMethod.POST,
                     request_data=ACSRequestData(
                         url=self.config.base_url + self.config.endpoints.LOGOUT,
-                        headers={"session-id": self.session_id},
+                        headers={"session-id": self._session_id},
                     ),
                 )
             except ACSRequestException as e:
                 self.logger.error(f"Error logging out of CCure session: {e}")
                 self.log_session_details()
             finally:
-                self.logger.debug(f"Removing Session ID: {self.session_id}")
-                self.session_id = None
-
-    def get_session_id(self):
-        """Get the ID for the current CCure session or generate a new one"""
-        self.logger.debug(f"Session ID: {self.session_id}")
-        if self.session_id is None:
-            return self.login()
-        return self.session_id
+                self.logger.debug(f"Removing Session ID: {self._session_id}")
+                self._session_id = None
 
     def keepalive(self):
         """Prevent the CCure api session from expiring from inactivity"""
@@ -96,7 +96,7 @@ class CcureConnection(ACSConnection):
                 request_data=ACSRequestData(
                     url=self.config.base_url + self.config.endpoints.KEEPALIVE,
                     headers={
-                        "session-id": self.get_session_id(),
+                        "session-id": self.session_id,
                         "Access-Control-Expose-Headers": "session-id",
                     },
                 ),
@@ -111,7 +111,7 @@ class CcureConnection(ACSConnection):
         self,
         requests_method: ACSRequestMethod,
         request_data: ACSRequestData,
-        timeout: Number = 0,
+        timeout: Optional[Number] = 0,
         request_attempts: int = 2,
     ) -> ACSRequestResponse:
         """
@@ -137,12 +137,12 @@ class CcureConnection(ACSConnection):
                     raise e
                 request_attempts -= 1
                 self.logout()
-                request_data.headers["session-id"] = self.get_session_id()
+                request_data.headers["session-id"] = self.session_id
 
     def log_session_details(self):
         """Log session ID and the api version number"""
         version_url = self.config.base_url + self.config.endpoints.VERSIONS
-        self.logger.error(f"Session ID: {self.session_id}")
+        self.logger.error(f"Session ID: {self._session_id}")
         try:
             response = self.request(
                 ACSRequestMethod.POST,

@@ -10,7 +10,7 @@ from acslib.ccure.filters import PersonnelFilter
 
 def test_default_ccure_acs(env_config, caplog):
     """Default picks up env vars."""
-    ccure = CcureACS()
+    ccure = CcureACS(connection=None)
     assert ccure.config.base_url == "https://example.com/ccure"
     assert ccure.logger.name == "acslib.ccure.connection"
     assert "acslib.ccure.connection" in caplog.text
@@ -37,7 +37,9 @@ def test_ccure_personnel_search(env_config, personnel_response, ccure_connection
             terms=["test"],
             page_size=None,
             page_number=1,
+            timeout=0,
             search_options=None,
+            where_clause=None,
         )
     assert "Searching for personnel" in caplog.text
 
