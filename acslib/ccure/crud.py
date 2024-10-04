@@ -109,7 +109,7 @@ class CcureClearance(CcureACS):
         self,
         terms: Optional[list] = None,
         search_filter: Optional[ClearanceFilter] = None,
-        page_size: Optional[int] = None,
+        page_size: Optional[int] = 100000,
         page_number: int = 1,
         timeout: Number = 0,
         search_options: Optional[dict] = None,
