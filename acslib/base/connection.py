@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
+from numbers import Number
 from typing import Any, Optional
 
 import requests
@@ -80,7 +81,7 @@ class ACSConnection(ABC):
 
     def __init__(self, **kwargs):
         self.config = kwargs.get("config")
-        self.timeout = kwargs.get("timeout", 1)
+        self.timeout = kwargs.get("timeout", self.config.timeout)
         self.response = None
 
     @abstractmethod
@@ -93,11 +94,11 @@ class ACSConnection(ABC):
 
     def _make_request(self, requests_method: ACSRequestMethod, request_data_map: dict):
         if req := self.REQUEST_TYPE.get(requests_method):
-            return req(**request_data_map, timeout=self.timeout)
+            return req(**request_data_map)
         raise ACSConnectionException(f"Invalid request method: {requests_method}")
 
     def request(
-        self, requests_method: ACSRequestMethod, request_data: ACSRequestData
+        self, requests_method: ACSRequestMethod, request_data: ACSRequestData, timeout: Number
     ) -> ACSRequestResponse:
         """
         Process requests to remote servers.
@@ -115,6 +116,7 @@ class ACSConnection(ABC):
             request_data_map = request_data.model_dump()
             request_data_map["json"] = request_data_map.pop("request_json", None)
             request_data_map["data"] = request_data_map.get("data", {})
+            request_data_map["timeout"] = timeout
             # remove request_data_map properties with None values
             request_data_map = {k: v for k, v in request_data_map.items() if v is not None}
             response = self._make_request(requests_method, request_data_map)
@@ -139,21 +141,21 @@ class ACSConnection(ABC):
             # The request timed out while trying to connect to the remote server.
             # Requests that produced this error are safe to retry.
             raise ACSRequestException(
-                status_code=status.HTTP_408_REQUEST_TIMEOUT,
-                log_message=f"Unable to connect to remote server in {self.timeout} second(s)",
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                log_message=f"Unable to connect to remote server in {timeout} second(s)",
             )
         except requests.ReadTimeout:
             # The server did not send any data in the allotted amount of time.
             raise ACSRequestException(
-                status_code=status.HTTP_408_REQUEST_TIMEOUT,
-                log_message=f"No response from remote server in {self.timeout} second(s)",
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                log_message=f"No response from remote server in {timeout} second(s)",
             )
         except requests.Timeout:
             # The request timed out.
             # Watching this error will catch both ConnectTimeout and ReadTimeout errors.
             raise ACSRequestException(
-                status_code=status.HTTP_408_REQUEST_TIMEOUT,
-                log_message=f"Request took longer than {self.timeout} second(s)",
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                log_message=f"Request took longer than {timeout} second(s)",
             )
         except requests.ConnectionError:
             # A Connection error occurred.

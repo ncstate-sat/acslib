@@ -85,7 +85,7 @@ class PersonnelAction(CcureACS):
     ) -> ACSRequestResponse:
         """
         Set an image to a personnel object's PrimaryPortrait property
-        - `image` is base-64 encoded.
+        - `image` is base-64 url-encoded.
         - `image_name` must be unique.
         - `partition_id` refers to the partition where the personnel object is stored.
         """

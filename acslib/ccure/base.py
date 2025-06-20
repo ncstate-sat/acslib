@@ -18,7 +18,7 @@ class CcureACS(AccessControlSystem):
 
     @property
     def config(self):
-        """."""
+        """Return the ccure connection configuration"""
         return self.connection.config
 
     def search(
