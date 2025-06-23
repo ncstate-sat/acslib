@@ -126,12 +126,13 @@ class CcureConnection(ACSConnection):
 
         Returns: An object with status_code, json, and headers attributes
         """
-        # use TIMEOUT as the default timeout value
-        if timeout != 0:
-            self.config.timeout = timeout
         while request_attempts > 0:
             try:
-                return super().request(requests_method, request_data)
+                return super().request(
+                    requests_method,
+                    request_data,
+                    timeout or self.config.timeout,
+                )
             except ACSRequestException as e:
                 if e.status_code != status.HTTP_401_UNAUTHORIZED or request_attempts == 1:
                     raise e
