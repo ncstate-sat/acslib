@@ -180,6 +180,7 @@ class ClearanceItemFilter(CcureFilter):
         if display_properties is not None:
             self.display_properties = display_properties
 
+
 class GroupFilter(CcureFilter):
     """Basic CCure Group Filter
     :param lookups: Dict containing searchable field names and their lookup functions
@@ -202,9 +203,21 @@ class GroupFilter(CcureFilter):
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
-        self.display_properties = ["Name", 'Description', 'GUID', 'ClassType', 'Protected', 'PartitionID', 'DefaultRecord', 'Template', 'GroupType', 'GroupRule']
+        self.display_properties = [
+            "Name",
+            "Description",
+            "GUID",
+            "ClassType",
+            "Protected",
+            "PartitionID",
+            "DefaultRecord",
+            "Template",
+            "GroupType",
+            "GroupRule",
+        ]
         if display_properties is not None:
             self.display_properties = display_properties
+
 
 class GroupMemberFilter(CcureFilter):
     """Basic CCure GroupMember Filter
@@ -228,6 +241,12 @@ class GroupMemberFilter(CcureFilter):
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
-        self.display_properties = ['ObjectID', "GroupID", 'TargetObjectID', 'GroupType', 'TargetObjectGUID']
+        self.display_properties = [
+            "ObjectID",
+            "GroupID",
+            "TargetObjectID",
+            "GroupType",
+            "TargetObjectGUID",
+        ]
         if display_properties is not None:
             self.display_properties = display_properties

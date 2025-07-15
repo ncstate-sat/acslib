@@ -11,7 +11,7 @@ from acslib.ccure.filters import (
     CredentialFilter,
     PersonnelFilter,
     GroupFilter,
-    GroupMemberFilter
+    GroupMemberFilter,
 )
 from acslib.ccure.data_models import (
     ClearanceItemCreateData,
@@ -333,8 +333,8 @@ class CcureClearanceItem(CcureACS):
         """Delete a ClearanceItem object by its CCure ID"""
         return super().delete(object_type=item_type, object_id=item_id)
 
-class CcureGroup(CcureACS):
 
+class CcureGroup(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
         self.search_filter = GroupFilter()
@@ -350,7 +350,6 @@ class CcureGroup(CcureACS):
         search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
     ) -> list:
-
         self.logger.info("Searching for Clearance Item Group")
         search_filter = search_filter or self.search_filter
         return super().search(
@@ -393,7 +392,6 @@ class CcureGroup(CcureACS):
 
 
 class CcureGroupMember(CcureACS):
-
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
         self.search_filter = GroupMemberFilter()
@@ -409,7 +407,6 @@ class CcureGroupMember(CcureACS):
         search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
     ) -> list:
-
         self.logger.info("Searching for Clearance Item Group")
         search_filter = search_filter or self.search_filter
         return super().search(

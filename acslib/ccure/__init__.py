@@ -11,9 +11,15 @@ from acslib.ccure.crud import (
     CcureCredential,
     CcureClearanceItem,
     CcureGroup,
-    CcureGroupMember
+    CcureGroupMember,
 )
-from acslib.ccure.filters import ClearanceFilter, PersonnelFilter, CredentialFilter, GroupFilter, GroupMemberFilter
+from acslib.ccure.filters import (
+    ClearanceFilter,
+    PersonnelFilter,
+    CredentialFilter,
+    GroupFilter,
+    GroupMemberFilter,
+)
 
 
 class CcureAPI:

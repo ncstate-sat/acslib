@@ -12,8 +12,8 @@ class ObjectType(Enum):
     ISTAR_CONTROLLER = "istar controller"
     PERSONNEL = "personnel"
     TIME_SPEC = "time spec"
-    GROUP = 'group'
-    GROUP_MEMBER = 'group member'
+    GROUP = "group"
+    GROUP_MEMBER = "group member"
 
     @property
     def complete(self):
