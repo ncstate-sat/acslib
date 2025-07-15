@@ -12,6 +12,8 @@ class ObjectType(Enum):
     ISTAR_CONTROLLER = "istar controller"
     PERSONNEL = "personnel"
     TIME_SPEC = "time spec"
+    GROUP = 'group'
+    GROUP_MEMBER = 'group member'
 
     @property
     def complete(self):
@@ -35,6 +37,10 @@ class ObjectType(Enum):
             return "SoftwareHouse.NextGen.Common.SecurityObjects.Personnel"
         if self == self.TIME_SPEC:
             return "SoftwareHouse.CrossFire.Common.Objects.TimeSpec"
+        if self == self.GROUP:
+            return "SoftwareHouse.CrossFire.Common.Objects.Group"
+        if self == self.GROUP_MEMBER:
+            return "SoftwareHouse.CrossFire.Common.Objects.GroupMember"
 
 
 class ImageType(Enum):
