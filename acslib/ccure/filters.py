@@ -179,3 +179,74 @@ class ClearanceItemFilter(CcureFilter):
         self.display_properties = ["Name"]
         if display_properties is not None:
             self.display_properties = display_properties
+
+
+class GroupFilter(CcureFilter):
+    """Basic CCure Group Filter
+    :param lookups: Dict containing searchable field names and their lookup functions
+    :param outer_bool: Boolean operator to use between search terms
+    :param inner_bool: Boolean operator to use between lookups
+    :param term_operator: Term operator to use between field and a search term
+    :param display_properties: List of properties from CCure to be included in the CCure response
+    :attribute
+    """
+
+    def __init__(
+        self,
+        lookups: Optional[dict[str, callable]] = None,
+        outer_bool=BooleanOperators.AND,
+        inner_bool=BooleanOperators.OR,
+        term_operator=TermOperators.FUZZY,
+        display_properties: Optional[list[str]] = None,
+    ):
+        self.filter_fields = lookups
+        self.outer_bool = f" {outer_bool.value} "
+        self.inner_bool = f" {inner_bool.value} "
+        self.term_operator = term_operator.value
+        self.display_properties = [
+            "Name",
+            "Description",
+            "GUID",
+            "ClassType",
+            "Protected",
+            "PartitionID",
+            "DefaultRecord",
+            "Template",
+            "GroupType",
+            "GroupRule",
+        ]
+        if display_properties is not None:
+            self.display_properties = display_properties
+
+
+class GroupMemberFilter(CcureFilter):
+    """Basic CCure GroupMember Filter
+    :param lookups: Dict containing searchable field names and their lookup functions
+    :param outer_bool: Boolean operator to use between search terms
+    :param inner_bool: Boolean operator to use between lookups
+    :param term_operator: Term operator to use between field and a search term
+    :param display_properties: List of properties from CCure to be included in the CCure response
+    :attribute
+    """
+
+    def __init__(
+        self,
+        lookups: Optional[dict[str, callable]] = None,
+        outer_bool=BooleanOperators.AND,
+        inner_bool=BooleanOperators.OR,
+        term_operator=TermOperators.FUZZY,
+        display_properties: Optional[list[str]] = None,
+    ):
+        self.filter_fields = lookups
+        self.outer_bool = f" {outer_bool.value} "
+        self.inner_bool = f" {inner_bool.value} "
+        self.term_operator = term_operator.value
+        self.display_properties = [
+            "ObjectID",
+            "GroupID",
+            "TargetObjectID",
+            "GroupType",
+            "TargetObjectGUID",
+        ]
+        if display_properties is not None:
+            self.display_properties = display_properties

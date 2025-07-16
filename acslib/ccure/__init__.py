@@ -10,8 +10,16 @@ from acslib.ccure.crud import (
     CcureClearance,
     CcureCredential,
     CcureClearanceItem,
+    CcureGroup,
+    CcureGroupMember,
 )
-from acslib.ccure.filters import ClearanceFilter, PersonnelFilter, CredentialFilter
+from acslib.ccure.filters import (
+    ClearanceFilter,
+    PersonnelFilter,
+    CredentialFilter,
+    GroupFilter,
+    GroupMemberFilter,
+)
 
 
 class CcureAPI:
@@ -23,3 +31,5 @@ class CcureAPI:
         self.clearance_item = CcureClearanceItem(self.connection)
         self.action = CcureAction(self.connection)
         self.ccure_object = CcureACS(self.connection)
+        self.group = CcureGroup(self.connection)
+        self.group_member = CcureGroupMember(self.connection)

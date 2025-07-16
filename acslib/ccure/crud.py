@@ -10,6 +10,8 @@ from acslib.ccure.filters import (
     ClearanceItemFilter,
     CredentialFilter,
     PersonnelFilter,
+    GroupFilter,
+    GroupMemberFilter,
 )
 from acslib.ccure.data_models import (
     ClearanceItemCreateData,
@@ -330,3 +332,117 @@ class CcureClearanceItem(CcureACS):
     def delete(self, item_type: str, item_id: int) -> ACSRequestResponse:
         """Delete a ClearanceItem object by its CCure ID"""
         return super().delete(object_type=item_type, object_id=item_id)
+
+
+class CcureGroup(CcureACS):
+    def __init__(self, connection: Optional[CcureConnection] = None):
+        super().__init__(connection)
+        self.search_filter = GroupFilter()
+
+    def search(
+        self,
+        item_type: str,
+        terms: Optional[list] = None,
+        search_filter: Optional[GroupFilter] = None,
+        page_size: Optional[int] = None,
+        page_number: int = 1,
+        timeout: Number = 0,
+        search_options: Optional[dict] = None,
+        where_clause: Optional[str] = None,
+    ) -> list:
+        self.logger.info("Searching for Clearance Item Group")
+        search_filter = search_filter or self.search_filter
+        return super().search(
+            object_type=item_type,
+            search_filter=search_filter,
+            terms=terms,
+            page_size=page_size,
+            page_number=page_number,
+            timeout=timeout,
+            search_options=search_options,
+            where_clause=where_clause,
+        )
+
+    def get_property(self, object_id: int, property_name: str) -> Any:
+        return super().get_property(self.type, object_id, property_name)
+
+    def count(
+        self,
+        item_type: str,
+        terms: Optional[list] = None,
+        search_filter: Optional[GroupFilter] = None,
+    ) -> int:
+        """Get the total number of Clearance Group objects"""
+        search_filter = search_filter or self.search_filter
+        return self.search(
+            item_type=item_type,
+            search_filter=search_filter,
+            terms=terms,
+            search_options={"CountOnly": True},
+        )
+
+    def update(self, *args, **kwargs) -> ACSRequestResponse:
+        raise ACSNotImplementedException("Updating groups is not currently supported.")
+
+    def create(self, *args, **kwargs) -> ACSRequestResponse:
+        raise ACSNotImplementedException("Creating groups is not currently supported.")
+
+    def delete(self, *args, **kwargs) -> ACSRequestResponse:
+        raise ACSNotImplementedException("Deleting groups is not currently supported.")
+
+
+class CcureGroupMember(CcureACS):
+    def __init__(self, connection: Optional[CcureConnection] = None):
+        super().__init__(connection)
+        self.search_filter = GroupMemberFilter()
+
+    def search(
+        self,
+        item_type: str,
+        terms: Optional[list] = None,
+        search_filter: Optional[GroupMemberFilter] = None,
+        page_size: Optional[int] = None,
+        page_number: int = 1,
+        timeout: Number = 0,
+        search_options: Optional[dict] = None,
+        where_clause: Optional[str] = None,
+    ) -> list:
+        self.logger.info("Searching for Clearance Item Group")
+        search_filter = search_filter or self.search_filter
+        return super().search(
+            object_type=item_type,
+            search_filter=search_filter,
+            terms=terms,
+            page_size=page_size,
+            page_number=page_number,
+            timeout=timeout,
+            search_options=search_options,
+            where_clause=where_clause,
+        )
+
+    def get_property(self, object_id: int, property_name: str) -> Any:
+        return super().get_property(self.type, object_id, property_name)
+
+    def count(
+        self,
+        item_type: str,
+        terms: Optional[list] = None,
+        search_filter: Optional[GroupMemberFilter] = None,
+    ) -> int:
+        """Get the total number of Clearance Group objects"""
+        search_filter = search_filter or self.search_filter
+        return self.search(
+            item_type=item_type,
+            search_filter=search_filter,
+            terms=terms,
+            search_options={"CountOnly": True},
+        )
+
+    def update(self, *args, **kwargs) -> ACSRequestResponse:
+        raise ACSNotImplementedException("Updating groups is not currently supported.")
+
+    def create(self, *args, **kwargs) -> ACSRequestResponse:
+        raise ACSNotImplementedException("Creating groups is not currently supported.")
+
+    def delete(self, *args, **kwargs) -> ACSRequestResponse:
+        raise ACSNotImplementedException("Deleting groups is not currently supported.")
