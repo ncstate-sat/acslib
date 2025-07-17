@@ -141,31 +141,45 @@ class ClearanceAction(CcureACS):
         )
 
 
-class DoorAction(
-    CcureACS
-):  # TODO should this be ClearanceItemAction? i think we only lock/unlock doors.
+class DoorAction(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
+        self.type = ObjectType.DOOR.complete
 
-    def lock_door(
+    def lock(
         self,
         door_id: int,
-        lock_time: datetime,
+        lock_time: Optional[datetime] = None,
         unlock_time: Optional[datetime] = None,
-        priority: int = 1,
+        priority: Optional[int] = None,
+        source_name: str = "acslib",
     ):
-        if unlock_time and lock_time > unlock_time:
+        """
+        Lock a door for a set period of time
+        `lock_time`, `unlock_time`, and `priority` are optional.
+        `source_name` refers to the client application making the request
+        """
+        if lock_time and unlock_time and lock_time > unlock_time:
             raise ACSRequestException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 log_message="unlock_time must be after lock_time.",
             )
         TIME_FORMAT = "%m/%d/%Y %H:%M"  # MM/DD/YYYY hh:mm
+        property_names = ["TargetType", "TargetID"]
+        property_values = ["SoftwareHouse.NextGen.Common.SecurityObjects.Door", door_id]
+        if lock_time:
+            property_names.append("StartTime")
+            property_values.append(lock_time.strftime(TIME_FORMAT))
+        if unlock_time:
+            property_names.append("EndTime")
+            property_values.append(unlock_time.strftime(TIME_FORMAT))
+        if priority:
+            property_names.append("Priority")
+            property_values.append(priority)
         request_data = {
-            "TargetType": "SoftwareHouse.NextGen.Common.SecurityObjects.iStarDoor",
-            "TargetID": door_id,
-            "StartTime": lock_time.strftime(TIME_FORMAT),
-            "EndTime": unlock_time.strftime(TIME_FORMAT),  # TODO what if this is None
-            "Priority": priority,
+            "PropertyNames": property_names,
+            "PropertyValues": property_values,
+            "sourceName": source_name,
         }
         return self.connection.request(
             ACSRequestMethod.POST,
@@ -177,25 +191,41 @@ class DoorAction(
             ),
         )
 
-    def unlock_door(
+    def unlock(
         self,
         door_id: int,
-        unlock_time: datetime,
+        unlock_time: Optional[datetime] = None,
         lock_time: Optional[datetime] = None,
-        priority: int = 1,
+        priority: Optional[int] = None,
+        source_name: str = "acslib",
     ):
-        if lock_time and unlock_time > lock_time:
+        """
+        Unlock a door for a set period of time
+        `unlock_time`, `lock_time`, and `priority` are optional.
+        `source_name` refers to the client application making the request
+        """
+        if unlock_time and lock_time and lock_time > lock_time:
             raise ACSRequestException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 log_message="lock_time must be after unlock_time.",
             )
         TIME_FORMAT = "%m/%d/%Y %H:%M"  # MM/DD/YYYY hh:mm
+        property_names = ["TargetType", "TargetID"]
+        property_values = ["SoftwareHouse.NextGen.Common.SecurityObjects.Door", door_id]
+        if unlock_time:
+            property_names.append("StartTime")
+            property_values.append(unlock_time.strftime(TIME_FORMAT))
+        if lock_time:
+            property_names.append("EndTime")
+            property_values.append(lock_time.strftime(TIME_FORMAT))
+        if priority:
+            property_names.append("Priority")
+            property_values.append(priority)
+
         request_data = {
-            "TargetType": "SoftwareHouse.NextGen.Common.SecurityObjects.iStarDoor",
-            "TargetID": door_id,
-            "StartTime": unlock_time.strftime(TIME_FORMAT),
-            "EndTime": lock_time.strftime(TIME_FORMAT),  # TODO what if this is None
-            "Priority": priority,
+            "PropertyNames": property_names,
+            "PropertyValues": property_values,
+            "sourceName": source_name,
         }
         return self.connection.request(
             ACSRequestMethod.POST,

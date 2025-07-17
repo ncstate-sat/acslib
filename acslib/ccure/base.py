@@ -70,8 +70,12 @@ class CcureACS(AccessControlSystem):
     def get_property(self, object_type: str, object_id: int, property_name: str) -> Any:
         """Return the value of one property from one CCure object"""
         search_filter = CcureFilter(lookups={"ObjectID": NFUZZ}, display_properties=[property_name])
-        response = self.search(
-            object_type=object_type, terms=[object_id], search_filter=search_filter, page_size=1
+        response = CcureACS.search(
+            self,
+            object_type=object_type,
+            terms=[object_id],
+            search_filter=search_filter,
+            page_size=1,
         )
         if response:
             search_result = response[0]
