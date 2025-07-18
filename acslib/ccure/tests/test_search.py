@@ -62,9 +62,9 @@ def test_single_search_term_not_list():
 def test_multiple_terms():
     filter = PersonnelFilter()
     search = filter.filter(["test", "test2"])
-    assert (
-        search
-        == "(FirstName LIKE '%test%' OR LastName LIKE '%test%') AND (FirstName LIKE '%test2%' OR LastName LIKE '%test2%')"
+    assert search == (
+        "(FirstName LIKE '%test%' OR LastName LIKE '%test%') AND "
+        "(FirstName LIKE '%test2%' OR LastName LIKE '%test2%')"
     )
 
 

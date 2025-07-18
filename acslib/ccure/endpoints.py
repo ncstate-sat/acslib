@@ -12,3 +12,4 @@ class V2Endpoints:
     LOGOUT = "/victorwebservice/api/Authenticate/Logout"
     KEEPALIVE = "/victorwebservice/api/v2/session/keepalive"
     VERSIONS = "/victorwebservice/api/Generic/Versions"
+    ACTION = "/victorwebservice/api/Actions/ExecuteAction"
