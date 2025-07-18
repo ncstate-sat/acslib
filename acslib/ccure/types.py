@@ -7,6 +7,7 @@ class ObjectType(Enum):
     CREDENTIAL = "credential"
     CLEARANCE_ITEM = "clearance item"
     DOOR = "door"
+    ISTAR_DOOR = "istar door"
     ELEVATOR = "elevator"
     IMAGE = "image"
     ISTAR_CONTROLLER = "istar controller"
@@ -27,6 +28,8 @@ class ObjectType(Enum):
             return "SoftwareHouse.NextGen.Common.SecurityObjects.ClearanceItem"
         if self == self.DOOR:
             return "SoftwareHouse.NextGen.Common.SecurityObjects.Door"
+        if self == self.ISTAR_DOOR:
+            return "SoftwareHouse.NextGen.Common.SecurityObjects.iStarDoor"
         if self == self.ELEVATOR:
             return "SoftwareHouse.NextGen.Common.SecurityObjects.Elevator"
         if self == self.IMAGE:

@@ -4,7 +4,6 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from acslib.base import (
-    AccessControlSystem,
     ACSRequestData,
     ACSRequestResponse,
     ACSRequestException,
@@ -164,9 +163,9 @@ class DoorAction(CcureACS):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 log_message="unlock_time must be after lock_time.",
             )
-        TIME_FORMAT = "%m/%d/%Y %H:%M"  # MM/DD/YYYY hh:mm
+        TIME_FORMAT = "%m/%d/%Y %H:%M:%S"  # MM/DD/YYYY hh:mm:ss
         property_names = ["TargetType", "TargetID"]
-        property_values = ["SoftwareHouse.NextGen.Common.SecurityObjects.Door", door_id]
+        property_values = [ObjectType.ISTAR_DOOR.complete, door_id]
         if lock_time:
             property_names.append("StartTime")
             property_values.append(lock_time.strftime(TIME_FORMAT))
@@ -209,9 +208,9 @@ class DoorAction(CcureACS):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 log_message="lock_time must be after unlock_time.",
             )
-        TIME_FORMAT = "%m/%d/%Y %H:%M"  # MM/DD/YYYY hh:mm
+        TIME_FORMAT = "%m/%d/%Y %H:%M:%S"  # MM/DD/YYYY hh:mm:ss
         property_names = ["TargetType", "TargetID"]
-        property_values = ["SoftwareHouse.NextGen.Common.SecurityObjects.Door", door_id]
+        property_values = [ObjectType.ISTAR_DOOR.complete, door_id]
         if unlock_time:
             property_names.append("StartTime")
             property_values.append(unlock_time.strftime(TIME_FORMAT))
