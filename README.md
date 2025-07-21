@@ -276,6 +276,5 @@ response = ccure.action.door.lock(
     door_id=5050,
     lock_time=datetime.now(),
     unlock_time=datetime.now() + timedelta(minutes=10),
-    priority=1,
 )
 ```

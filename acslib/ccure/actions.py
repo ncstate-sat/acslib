@@ -156,6 +156,8 @@ class DoorAction(CcureACS):
         """
         Lock a door for a set period of time
         `lock_time`, `unlock_time`, and `priority` are optional.
+        If there are multiple conflicting schedules, the schedule with the higher priority value
+            will take precedence
         `source_name` refers to the client application making the request
         """
         if lock_time and unlock_time and lock_time > unlock_time:
@@ -201,9 +203,11 @@ class DoorAction(CcureACS):
         """
         Unlock a door for a set period of time
         `unlock_time`, `lock_time`, and `priority` are optional.
+        If there are multiple conflicting schedules, the schedule with the higher priority value
+            will take precedence
         `source_name` refers to the client application making the request
         """
-        if unlock_time and lock_time and lock_time > lock_time:
+        if unlock_time and lock_time and unlock_time > lock_time:
             raise ACSRequestException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 log_message="lock_time must be after unlock_time.",
