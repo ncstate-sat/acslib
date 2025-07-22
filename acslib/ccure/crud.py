@@ -279,8 +279,18 @@ class CcureClearanceItem(CcureACS):
             where_clause=where_clause,
         )
 
-    def get_property(self, object_id: int, property_name: str) -> Any:
-        return super().get_property(self.type, object_id, property_name)
+    def get_property(self, object_type: str, object_id: int, property_name: str) -> Any:
+        return super().get_property(object_type, object_id, property_name)
+
+    def get_lock_state(self, door_id: int):
+        mode_status = self.get_property(ObjectType.DOOR.complete, door_id, "ModeStatus")
+        return {
+            0: "Unknown",
+            1: "Unlocked",
+            2: "Locked",
+            3: "No Access",
+            4: "Momentary Unlock",
+        }.get(mode_status, "Unknown")
 
     def count(
         self,

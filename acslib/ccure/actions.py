@@ -3,9 +3,14 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from acslib.base import ACSRequestResponse
+from acslib.base import (
+    ACSRequestData,
+    ACSRequestResponse,
+    ACSRequestException,
+    status,
+)
 from acslib.ccure.base import CcureACS
-from acslib.ccure.connection import CcureConnection
+from acslib.ccure.connection import CcureConnection, ACSRequestMethod
 from acslib.ccure.filters import (
     CcureFilter,
     ClearanceFilter,
@@ -135,7 +140,109 @@ class ClearanceAction(CcureACS):
         )
 
 
+class DoorAction(CcureACS):
+    def __init__(self, connection: Optional[CcureConnection] = None):
+        super().__init__(connection)
+        self.type = ObjectType.DOOR.complete
+
+    def lock(
+        self,
+        door_id: int,
+        lock_time: Optional[datetime] = None,
+        unlock_time: Optional[datetime] = None,
+        priority: Optional[int] = None,
+        source_name: str = "acslib",
+    ):
+        """
+        Lock a door for a set period of time
+        `lock_time`, `unlock_time`, and `priority` are optional.
+        If there are multiple conflicting schedules, the schedule with the higher priority value
+            will take precedence
+        `source_name` refers to the client application making the request
+        """
+        if lock_time and unlock_time and lock_time > unlock_time:
+            raise ACSRequestException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                log_message="unlock_time must be after lock_time.",
+            )
+        TIME_FORMAT = "%m/%d/%Y %H:%M:%S"  # MM/DD/YYYY hh:mm:ss
+        property_names = ["TargetType", "TargetID"]
+        property_values = [ObjectType.ISTAR_DOOR.complete, door_id]
+        if lock_time:
+            property_names.append("StartTime")
+            property_values.append(lock_time.strftime(TIME_FORMAT))
+        if unlock_time:
+            property_names.append("EndTime")
+            property_values.append(unlock_time.strftime(TIME_FORMAT))
+        if priority:
+            property_names.append("Priority")
+            property_values.append(priority)
+        request_data = {
+            "PropertyNames": property_names,
+            "PropertyValues": property_values,
+            "sourceName": source_name,
+        }
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.ACTION,
+                params={"actionTypeFullName": "SoftwareHouse.NextGen.Common.Actions.LockDoor"},
+                data=self.connection.encode_data(request_data),
+                headers=self.connection.base_headers | self.connection.header_for_form_data,
+            ),
+        )
+
+    def unlock(
+        self,
+        door_id: int,
+        unlock_time: Optional[datetime] = None,
+        lock_time: Optional[datetime] = None,
+        priority: Optional[int] = None,
+        source_name: str = "acslib",
+    ):
+        """
+        Unlock a door for a set period of time
+        `unlock_time`, `lock_time`, and `priority` are optional.
+        If there are multiple conflicting schedules, the schedule with the higher priority value
+            will take precedence
+        `source_name` refers to the client application making the request
+        """
+        if unlock_time and lock_time and unlock_time > lock_time:
+            raise ACSRequestException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                log_message="lock_time must be after unlock_time.",
+            )
+        TIME_FORMAT = "%m/%d/%Y %H:%M:%S"  # MM/DD/YYYY hh:mm:ss
+        property_names = ["TargetType", "TargetID"]
+        property_values = [ObjectType.ISTAR_DOOR.complete, door_id]
+        if unlock_time:
+            property_names.append("StartTime")
+            property_values.append(unlock_time.strftime(TIME_FORMAT))
+        if lock_time:
+            property_names.append("EndTime")
+            property_values.append(lock_time.strftime(TIME_FORMAT))
+        if priority:
+            property_names.append("Priority")
+            property_values.append(priority)
+
+        request_data = {
+            "PropertyNames": property_names,
+            "PropertyValues": property_values,
+            "sourceName": source_name,
+        }
+        return self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.config.base_url + self.config.endpoints.ACTION,
+                params={"actionTypeFullName": "SoftwareHouse.NextGen.Common.Actions.UnLockDoor"},
+                data=self.connection.encode_data(request_data),
+                headers=self.connection.base_headers | self.connection.header_for_form_data,
+            ),
+        )
+
+
 class CcureAction:
     def __init__(self, connection: Optional[CcureConnection] = None):
         self.personnel = PersonnelAction(connection)
         self.clearance = ClearanceAction(connection)
+        self.door = DoorAction(connection)

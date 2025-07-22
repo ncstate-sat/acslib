@@ -176,11 +176,22 @@ search_filter = ClearanceItemFilter(lookups={"ObjectID": NFUZZ})
 response = ccure.clearance_item.search(ObjectType.ELEVATOR.complete, [5000], search_filter=search_filter)
 ```
 
+#### Get a door's lock state
+
+```python
+from acslib import CcureAPI
+
+# get lock state for door 5001. eg. "Unlocked", "Locked", etc
+ccure = CcureAPI()
+response = ccure.clearance_item.get_lock_state(5001)
+```
+
 #### Update ClearanceItem
 
 ```python
 from acslib import CcureAPI
 from acslib.ccure.types import ObjectType
+
 # change a door's name
 ccure = CcureAPI()
 response = ccure.clearance_item.update(ObjectType.DOOR.complete, 5000, update_data={"Name": "new door name 123"})
@@ -250,5 +261,20 @@ ccure = CcureAPI()
 response = ccure.action.personnel.assign_clearances(
     personnel_id=5005,
     clearance_ids=[5002, 5003],
+)
+```
+
+#### Lock a door
+
+```python
+from datetime import datetime, timedelta
+from acslib import CcureAPI
+
+# lock door 5050 for ten minutes
+ccure = CcureAPI()
+response = ccure.action.door.lock(
+    door_id=5050,
+    lock_time=datetime.now(),
+    unlock_time=datetime.now() + timedelta(minutes=10),
 )
 ```
