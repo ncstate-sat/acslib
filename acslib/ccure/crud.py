@@ -348,10 +348,10 @@ class CcureGroup(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
         self.search_filter = GroupFilter()
+        self.type = ObjectType.GROUP.complete
 
     def search(
         self,
-        item_type: str,
         terms: Optional[list] = None,
         search_filter: Optional[GroupFilter] = None,
         page_size: Optional[int] = None,
@@ -363,7 +363,7 @@ class CcureGroup(CcureACS):
         self.logger.info("Searching for Clearance Item Group")
         search_filter = search_filter or self.search_filter
         return super().search(
-            object_type=item_type,
+            object_type=self.type,
             search_filter=search_filter,
             terms=terms,
             page_size=page_size,
@@ -378,14 +378,13 @@ class CcureGroup(CcureACS):
 
     def count(
         self,
-        item_type: str,
         terms: Optional[list] = None,
         search_filter: Optional[GroupFilter] = None,
     ) -> int:
         """Get the total number of Clearance Group objects"""
         search_filter = search_filter or self.search_filter
         return self.search(
-            item_type=item_type,
+            item_type=self.type,
             search_filter=search_filter,
             terms=terms,
             search_options={"CountOnly": True},
