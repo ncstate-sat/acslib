@@ -1,5 +1,5 @@
 from numbers import Number
-from typing import Any, Optional
+from typing import Any, Optional, Literal
 
 from acslib.base import ACSRequestResponse
 from acslib.base.connection import ACSNotImplementedException
@@ -248,10 +248,10 @@ class CcureClearanceItem(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
         self.search_filter = ClearanceItemFilter()
+        self.type = ObjectType.CLEARANCE_ITEM.complete
 
     def search(
         self,
-        item_type: str,
         terms: Optional[list] = None,
         search_filter: Optional[ClearanceItemFilter] = None,
         page_size: Optional[int] = None,
@@ -269,7 +269,7 @@ class CcureClearanceItem(CcureACS):
         self.logger.info("Searching for clearance items")
         search_filter = search_filter or self.search_filter
         return super().search(
-            object_type=item_type,
+            object_type=self.type,
             search_filter=search_filter,
             terms=terms,
             page_size=page_size,
@@ -294,39 +294,36 @@ class CcureClearanceItem(CcureACS):
 
     def count(
         self,
-        item_type: str,
         terms: Optional[list] = None,
         search_filter: Optional[PersonnelFilter] = None,
     ) -> int:
         """Get the total number of ClearanceItem objects"""
         search_filter = search_filter or self.search_filter
         return self.search(
-            item_type=item_type,
             search_filter=search_filter,
             terms=terms,
             search_options={"CountOnly": True},
         )
 
-    def update(self, item_type: str, item_id: int, update_data: dict) -> ACSRequestResponse:
+    def update(self, item_id: int, update_data: dict) -> ACSRequestResponse:
         """
         Edit properties of a ClearanceItem object
 
-        :param item_type: specifies an item type. eg ObjectType.DOOR
         :param item_id: the ClearanceItem object's CCure ID
         :param update_data: maps ClearanceItem properties to their new values
         """
-        return super().update(object_type=item_type, object_id=item_id, update_data=update_data)
+        return super().update(object_type=self.type, object_id=item_id, update_data=update_data)
 
     def create(
         self,
-        item_type: str,
+        child_type: str,
         controller_id: int,
         create_data: ClearanceItemCreateData,
     ) -> ACSRequestResponse:
         """
         Create a new clearance item object
 
-        :param item_type: eg ObjectType.DOOR, ObjectType.ELEVATOR
+        :param child_type: eg ObjectType.DOOR, ObjectType.ELEVATOR
         :param controller_id: object ID for the iStarController object for the new clearance item
         :param create_data: object with properties required to create a new clearance item
         """
@@ -335,23 +332,23 @@ class CcureClearanceItem(CcureACS):
         return self.add_children(
             parent_type=ObjectType.ISTAR_CONTROLLER,
             parent_id=controller_id,
-            child_type=item_type.complete,
+            child_type=child_type.complete,
             child_configs=[create_data_dict],
         )
 
-    def delete(self, item_type: str, item_id: int) -> ACSRequestResponse:
+    def delete(self, item_id: int) -> ACSRequestResponse:
         """Delete a ClearanceItem object by its CCure ID"""
-        return super().delete(object_type=item_type, object_id=item_id)
+        return super().delete(object_type=self.type, object_id=item_id)
 
 
 class CcureGroup(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
         self.search_filter = GroupFilter()
+        self.type = ObjectType.GROUP.complete
 
     def search(
         self,
-        item_type: str,
         terms: Optional[list] = None,
         search_filter: Optional[GroupFilter] = None,
         page_size: Optional[int] = None,
@@ -363,7 +360,7 @@ class CcureGroup(CcureACS):
         self.logger.info("Searching for Clearance Item Group")
         search_filter = search_filter or self.search_filter
         return super().search(
-            object_type=item_type,
+            object_type=self.type,
             search_filter=search_filter,
             terms=terms,
             page_size=page_size,
@@ -378,14 +375,12 @@ class CcureGroup(CcureACS):
 
     def count(
         self,
-        item_type: str,
         terms: Optional[list] = None,
         search_filter: Optional[GroupFilter] = None,
     ) -> int:
         """Get the total number of Clearance Group objects"""
         search_filter = search_filter or self.search_filter
         return self.search(
-            item_type=item_type,
             search_filter=search_filter,
             terms=terms,
             search_options={"CountOnly": True},
@@ -405,10 +400,10 @@ class CcureGroupMember(CcureACS):
     def __init__(self, connection: Optional[CcureConnection] = None):
         super().__init__(connection)
         self.search_filter = GroupMemberFilter()
+        self.type = ObjectType.GROUP_MEMBER.complete
 
     def search(
         self,
-        item_type: str,
         terms: Optional[list] = None,
         search_filter: Optional[GroupMemberFilter] = None,
         page_size: Optional[int] = None,
@@ -417,10 +412,10 @@ class CcureGroupMember(CcureACS):
         search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
     ) -> list:
-        self.logger.info("Searching for Clearance Item Group")
+        self.logger.info("Searching for Clearance Item Group members")
         search_filter = search_filter or self.search_filter
         return super().search(
-            object_type=item_type,
+            object_type=self.type,
             search_filter=search_filter,
             terms=terms,
             page_size=page_size,
@@ -435,14 +430,12 @@ class CcureGroupMember(CcureACS):
 
     def count(
         self,
-        item_type: str,
         terms: Optional[list] = None,
         search_filter: Optional[GroupMemberFilter] = None,
     ) -> int:
         """Get the total number of Clearance Group objects"""
         search_filter = search_filter or self.search_filter
         return self.search(
-            item_type=item_type,
             search_filter=search_filter,
             terms=terms,
             search_options={"CountOnly": True},
