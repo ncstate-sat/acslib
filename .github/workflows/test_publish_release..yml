@@ -73,16 +73,6 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_UPDATES: ${{ github.event.inputs.slack-updates || env.SLACK_UPDATES }}
 
-      - name: Send Success Message on Slack
-        if: ${{ github.event.pull_request.draft == false }}
-        uses: ./actions/slack-updates
-        with:
-          channel-id: ${{ github.event.inputs.slack-channel-id || env.SLACK_CHANNEL_ID }}
-          message: "The tests for `${{ env.REPO_NAME }}` have passed."
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_UPDATES: ${{ github.event.inputs.slack-updates || env.SLACK_UPDATES }}
-
   build_and_publish:
     name: Build and Publish
     # only proceed if test job ran successfully
@@ -169,15 +159,6 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_UPDATES: ${{ github.event.inputs.slack-updates || env.SLACK_UPDATES }}
 
-      - name: Send Success Message on Slack
-        uses: ./actions/slack-updates
-        with:
-          channel-id: ${{ github.event.inputs.slack-channel-id || env.SLACK_CHANNEL_ID }}
-          message: "A new version of `${{ env.REPO_NAME }}` has been uploaded to PyPI."
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_UPDATES: ${{ github.event.inputs.slack-updates || env.SLACK_UPDATES }}
-
   release:
     name: Release
     # only proceed if publish workflow ran successfully
@@ -240,15 +221,6 @@ jobs:
         with:
           channel-id: ${{ github.event.inputs.slack-channel-id || env.SLACK_CHANNEL_ID }}
           message: "The new version of `${{ env.REPO_NAME }}` has been uploaded to PyPI, but the GitHub release failed."
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_UPDATES: ${{ github.event.inputs.slack-updates || env.SLACK_UPDATES }}
-
-      - name: Send Success Message on Slack
-        uses: ./actions/slack-updates
-        with:
-          channel-id: ${{ github.event.inputs.slack-channel-id || env.SLACK_CHANNEL_ID }}
-          message: "A new Github release for `${{ env.REPO_NAME }}` with version `${{ env.CURRENT_VERSION }}` has been created."
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_UPDATES: ${{ github.event.inputs.slack-updates || env.SLACK_UPDATES }}
