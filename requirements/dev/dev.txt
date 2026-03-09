@@ -10,7 +10,7 @@ attrs==23.1.0
     # via pytest
 babel==2.13.1
     # via mkdocs-material
-bandit[toml]==1.7.5
+bandit[toml]==1.9.4
     # via acslib (pyproject.toml)
 black==23.11.0
     # via acslib (pyproject.toml)
@@ -54,10 +54,6 @@ flit-core==3.9.0
     # via flit
 ghp-import==2.1.0
     # via mkdocs
-gitdb==4.0.11
-    # via gitpython
-gitpython==3.1.40
-    # via bandit
 griffe==0.38.0
     # via mkdocstrings-python
 identify==2.5.31
@@ -119,8 +115,9 @@ nodeenv==1.8.0
     # via pre-commit
 oracledb==1.4.1
     # via sat-utils
-packaging==23.2
+packaging==26.0
     # via
+    #   acslib (pyproject.toml)
     #   black
     #   mkdocs
     #   pytest
@@ -204,8 +201,6 @@ six==1.16.0
     # via python-dateutil
 slack-sdk==3.23.0
     # via sat-utils
-smmap==5.0.1
-    # via gitdb
 stevedore==5.1.0
     # via bandit
 tokenize-rt==4.2.1

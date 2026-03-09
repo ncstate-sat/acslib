@@ -1,5 +1,4 @@
 import logging
-from numbers import Number
 from typing import Optional
 
 from acslib.base import (
@@ -111,7 +110,7 @@ class CcureConnection(ACSConnection):
         self,
         requests_method: ACSRequestMethod,
         request_data: ACSRequestData,
-        timeout: Optional[Number] = 0,
+        timeout: Optional[float] = 0,
         request_attempts: int = 2,
     ) -> ACSRequestResponse:
         """

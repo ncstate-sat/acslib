@@ -1,4 +1,3 @@
-from numbers import Number
 from typing import Optional, Any
 
 from acslib.base import AccessControlSystem, ACSRequestData, ACSRequestResponse, ACSRequestException
@@ -28,7 +27,7 @@ class CcureACS(AccessControlSystem):
         search_filter: Optional[CcureFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
-        timeout: Number = 0,
+        timeout: float = 0,
         search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
     ) -> int | list:
