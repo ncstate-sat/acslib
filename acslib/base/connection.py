@@ -50,9 +50,7 @@ class ACSRequestMethod(Enum):
 class ACSRequestResponse:
     """Successful queries from handle_request return this type of object"""
 
-    def __init__(
-        self, status_code: int, json: Any, headers: structures.CaseInsensitiveDict
-    ):
+    def __init__(self, status_code: int, json: Any, headers: structures.CaseInsensitiveDict):
         self.status_code = status_code
         self.json = json
         self.headers = headers
