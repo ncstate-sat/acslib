@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-from numbers import Number
 from typing import Any, Optional
 
 import requests
+from requests import structures
 from pydantic import BaseModel
 
 from acslib.base import status
+from acslib.base.config import ACSConfig
 
 
 class ACSConnectionException(Exception):
@@ -27,6 +28,9 @@ class ACSRequestException(Exception):
     def __str__(self):
         return f"{self.exception_name}: {self.status_code} {self.message}"
 
+    def __reduce__(self):
+        return (ACSRequestException, (self.status_code, self.message))
+
 
 class ACSNotImplementedException(ACSRequestException):
     def __init__(self, log_message: str):
@@ -46,9 +50,7 @@ class ACSRequestMethod(Enum):
 class ACSRequestResponse:
     """Successful queries from handle_request return this type of object"""
 
-    def __init__(
-        self, status_code: int, json: Any, headers: requests.structures.CaseInsensitiveDict
-    ):
+    def __init__(self, status_code: int, json: Any, headers: structures.CaseInsensitiveDict):
         self.status_code = status_code
         self.json = json
         self.headers = headers
@@ -80,7 +82,7 @@ class ACSConnection(ABC):
     }
 
     def __init__(self, **kwargs):
-        self.config = kwargs.get("config")
+        self.config: ACSConfig = kwargs["config"]
         self.timeout = kwargs.get("timeout", self.config.timeout)
         self.response = None
 
@@ -98,7 +100,7 @@ class ACSConnection(ABC):
         raise ACSConnectionException(f"Invalid request method: {requests_method}")
 
     def request(
-        self, requests_method: ACSRequestMethod, request_data: ACSRequestData, timeout: Number
+        self, requests_method: ACSRequestMethod, request_data: ACSRequestData, timeout: float
     ) -> ACSRequestResponse:
         """
         Process requests to remote servers.
@@ -160,13 +162,13 @@ class ACSConnection(ABC):
         except requests.ConnectionError:
             # A Connection error occurred.
             raise ACSRequestException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 log_message="Could not connect to the remote host",
             )
         except requests.RequestException:
             # There was an ambiguous exception that occurred while handling your request.
             raise ACSRequestException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 log_message="An exception occurred while handling this request",
             )
         if response.status_code in range(200, 300):
@@ -175,6 +177,6 @@ class ACSConnection(ABC):
             )
         if response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR:
             raise ACSRequestException(
-                status_code=status.HTTP_400_BAD_REQUEST, log_message=response.text
+                status_code=status.HTTP_502_BAD_GATEWAY, log_message=response.text
             )
         raise ACSRequestException(status_code=response.status_code, log_message=response.text)

@@ -1,5 +1,4 @@
-from numbers import Number
-from typing import Any, Optional, Literal
+from typing import Any, Optional
 
 from acslib.base import ACSRequestResponse
 from acslib.base.connection import ACSNotImplementedException
@@ -33,7 +32,7 @@ class CcurePersonnel(CcureACS):
         search_filter: Optional[PersonnelFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
-        timeout: Number = 0,
+        timeout: float = 0,
         search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
     ) -> list:
@@ -113,7 +112,7 @@ class CcureClearance(CcureACS):
         search_filter: Optional[ClearanceFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
-        timeout: Number = 0,
+        timeout: float = 0,
         search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
     ) -> list:
@@ -256,7 +255,7 @@ class CcureClearanceItem(CcureACS):
         search_filter: Optional[ClearanceItemFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
-        timeout: Number = 0,
+        timeout: float = 0,
         search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
     ) -> list:
@@ -353,7 +352,7 @@ class CcureGroup(CcureACS):
         search_filter: Optional[GroupFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
-        timeout: Number = 0,
+        timeout: float = 0,
         search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
     ) -> list:
@@ -408,7 +407,7 @@ class CcureGroupMember(CcureACS):
         search_filter: Optional[GroupMemberFilter] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
-        timeout: Number = 0,
+        timeout: float = 0,
         search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
     ) -> list:

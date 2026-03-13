@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "acslib"
-version = "0.1.16"
+version = "0.1.17"
 authors = [
     { name="Jeremy Gibson", email="jmgibso3@ncsu.edu" },
     { name="Luc Sanchez", email="lgsanche@ncsu.edu" },
@@ -41,6 +41,7 @@ dev = [
     "pyupgrade>=2.29.1, <3.0.0",
     "flit>=3.8.0, <4.0.0",
     "Faker>=20.0.0, <21.0.0",
+    "packaging>=24.0.0, <27.0.0"
 ]
 
 [project.urls]
