@@ -1,16 +1,19 @@
+from datetime import datetime
 from typing import Any, Optional
+from uuid import UUID
 
-from acslib.base import ACSRequestResponse
+from acslib.base import ACSRequestResponse, ACSRequestData, ACSRequestException, status
 from acslib.base.connection import ACSNotImplementedException
 from acslib.ccure.base import CcureACS
-from acslib.ccure.connection import CcureConnection
+from acslib.ccure.connection import CcureConnection, ACSRequestMethod
 from acslib.ccure.filters import (
     ClearanceFilter,
     ClearanceItemFilter,
     CredentialFilter,
-    PersonnelFilter,
     GroupFilter,
     GroupMemberFilter,
+    JournalFilter,
+    PersonnelFilter,
 )
 from acslib.ccure.data_models import (
     ClearanceItemCreateData,
@@ -448,3 +451,92 @@ class CcureGroupMember(CcureACS):
 
     def delete(self, *args, **kwargs) -> ACSRequestResponse:
         raise ACSNotImplementedException("Deleting groups is not currently supported.")
+
+
+class CcureJournal(CcureACS):
+    def __init__(self, connection: CcureConnection):
+        super().__init__(connection)
+        self.search_filter = JournalFilter()
+        self.type = ObjectType.JOURNAL.complete  # TODO maybe not?
+
+    def search(
+        self,
+        start_time: datetime,
+        end_time: datetime,
+        object_type: str,
+        object_guid: str,
+        message_types: list[str] = ["CardAdmitted", "CardRejected"],
+        page_size: Optional[int] = None,
+        page_number: int = 1,
+        timeout: float = 0,
+        sort_by: str = "ServerUTC DESC",
+        partition: int = 1,
+    ) -> list:
+        """
+        Get a list of transaction journal entries matching the given person and/or door
+        Can only filter by one guid per api call
+
+        :param terms: list of search terms
+        :param search filter: specifies how and in what fields to look for the search terms
+        """
+        try:
+            UUID(object_guid)
+        except ValueError:
+            raise ACSRequestException(
+                status.HTTP_422_UNPROCESSABLE_ENTITY,
+                f"Search filter must be a valid GUID, got '{object_guid}'",
+            )
+
+        TIME_FORMAT = "%m/%d/%Y %-I:%M:%S %p"  # MM/DD/YYYY h:mm:ss XM
+        if page_size is None:
+            page_size = super().config.page_size
+        request_json = {
+            "startDateTime" : start_time.strftime(TIME_FORMAT),
+            "endDateTime" : end_time.strftime(TIME_FORMAT),
+            "objectType" : object_type,
+            "objectGuid" : object_guid,
+            "sortOrder" : sort_by,
+            "pageSize" : page_size,
+            "pageNumber" : page_number,
+            "messageTypes" : message_types,
+            "partitionId": partition,
+        }
+        response = self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.connection.config.base_url
+                + self.connection.config.endpoints.JOURNALS,
+                request_json=request_json,
+                headers=self.connection.base_headers,
+            ),
+            timeout=timeout,
+        )
+        return response.json[1:]
+
+    def count(
+        self,
+        terms: Optional[list] = None,
+        search_filter: Optional[JournalFilter] = None,
+        where_clause: Optional[str] = None,
+    ) -> int:
+        """Get the total number of Journal objects"""
+        search_filter = search_filter or self.search_filter
+        return super().search(
+            object_type=self.type,
+            search_filter=search_filter,
+            where_clause=where_clause,
+            terms=terms,
+            search_options={"CountOnly": True},
+        )
+
+    def get_property(self, *args, **kwargs):
+        raise ACSNotImplementedException("CcureJournal.get_property is not currently supported.")
+
+    def update(self, *args, **kwargs):
+        raise ACSNotImplementedException("Updating journals is not currently supported.")
+
+    def create(self, *args, **kwargs):
+        raise ACSNotImplementedException("Creating groups is not currently supported.")
+
+    def delete(self, *args, **kwargs):
+        raise ACSNotImplementedException("Deleting journals is not currently supported.")

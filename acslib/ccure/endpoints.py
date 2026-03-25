@@ -6,6 +6,7 @@ class V2Endpoints:
     FIND_OBJS_W_CRITERIA = "/victorwebservice/api/Objects/FindObjsWithCriteriaFilter"
     PERSIST_TO_CONTAINER = "/victorwebservice/api/Objects/PersistToContainer"
     REMOVE_FROM_CONTAINER = "/victorwebservice/api/Objects/RemoveFromContainer"
+    JOURNALS = "/victorWebService/api/v2/Journal/FindInJournal"
     DELETE_OBJECT = "/victorwebservice/api/Objects/Delete"
     EDIT_OBJECT = "/victorwebservice/api/Objects/Put"
     LOGIN = "/victorwebservice/api/Authenticate/Login"

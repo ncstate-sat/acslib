@@ -15,6 +15,7 @@ class ObjectType(Enum):
     TIME_SPEC = "time spec"
     GROUP = "group"
     GROUP_MEMBER = "group member"
+    JOURNAL = "journal"
 
     @property
     def complete(self):
@@ -44,6 +45,8 @@ class ObjectType(Enum):
             return "SoftwareHouse.CrossFire.Common.Objects.Group"
         if self == self.GROUP_MEMBER:
             return "SoftwareHouse.CrossFire.Common.Objects.GroupMember"
+        if self == self.JOURNAL:
+            return "SoftwareHouse.CrossFire.Common.Objects.JournalLogBase"
 
 
 class ImageType(Enum):
