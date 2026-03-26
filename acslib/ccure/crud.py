@@ -491,21 +491,20 @@ class CcureJournal(CcureACS):
         if page_size is None:
             page_size = super().config.page_size
         request_json = {
-            "startDateTime" : start_time.strftime(TIME_FORMAT),
-            "endDateTime" : end_time.strftime(TIME_FORMAT),
-            "objectType" : object_type,
-            "objectGuid" : object_guid,
-            "sortOrder" : sort_by,
-            "pageSize" : page_size,
-            "pageNumber" : page_number,
-            "messageTypes" : message_types,
+            "startDateTime": start_time.strftime(TIME_FORMAT),
+            "endDateTime": end_time.strftime(TIME_FORMAT),
+            "objectType": object_type,
+            "objectGuid": object_guid,
+            "sortOrder": sort_by,
+            "pageSize": page_size,
+            "pageNumber": page_number,
+            "messageTypes": message_types,
             "partitionId": partition,
         }
         response = self.connection.request(
             ACSRequestMethod.POST,
             request_data=ACSRequestData(
-                url=self.connection.config.base_url
-                + self.connection.config.endpoints.JOURNALS,
+                url=self.connection.config.base_url + self.connection.config.endpoints.JOURNALS,
                 request_json=request_json,
                 headers=self.connection.base_headers,
             ),
