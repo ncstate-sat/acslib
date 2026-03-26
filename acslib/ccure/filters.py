@@ -274,3 +274,4 @@ class JournalFilter(CcureFilter):
         self.outer_bool = f" {outer_bool.value} "
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
+        self.display_properties = None
