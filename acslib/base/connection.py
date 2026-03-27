@@ -26,7 +26,7 @@ class ACSRequestException(Exception):
         self.exception_name = "RequestException"
 
     def __str__(self):
-        return f"{self.exception_name}: {self.message}"
+        return f"{self.exception_name}: {self.status_code} {self.message}"
 
     def __reduce__(self):
         return (ACSRequestException, (self.status_code, self.message))
