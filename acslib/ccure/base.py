@@ -9,9 +9,9 @@ class CcureACS(AccessControlSystem):
     """Base class for CCure API interactions"""
 
     def __init__(self, connection: Optional[CcureConnection]):
+        if not connection:
+            connection = CcureConnection()
         super().__init__(connection=connection)
-        if not self.connection:
-            self.connection = CcureConnection()
         self.logger = self.connection.logger
         self.request_options = {}
 

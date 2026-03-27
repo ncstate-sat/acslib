@@ -12,6 +12,7 @@ from acslib.ccure.crud import (
     CcureClearanceItem,
     CcureGroup,
     CcureGroupMember,
+    CcureJournal,
 )
 from acslib.ccure.filters import (
     ClearanceFilter,
@@ -20,6 +21,7 @@ from acslib.ccure.filters import (
     GroupFilter,
     GroupMemberFilter,
 )
+from acslib.ccure.types import ImageType, ObjectType
 
 
 class CcureAPI:
@@ -33,3 +35,4 @@ class CcureAPI:
         self.ccure_object = CcureACS(self.connection)
         self.group = CcureGroup(self.connection)
         self.group_member = CcureGroupMember(self.connection)
+        self.journal = CcureJournal(self.connection)
