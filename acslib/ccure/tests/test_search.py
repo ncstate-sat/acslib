@@ -1,6 +1,12 @@
+from datetime import datetime, timedelta
+import logging
 import pytest
 
+from acslib.base import ACSRequestException
 from acslib.base.search import BooleanOperators, TermOperators
+from acslib.ccure.config import CcureConfig
+from acslib.ccure.connection import CcureConnection
+from acslib.ccure.crud import CcureJournal
 from acslib.ccure.filters import (
     FUZZ,
     LFUZZ,
@@ -86,3 +92,14 @@ def test_fuzz_functions():
     assert RFUZZ("test") == "test%"
     assert FUZZ("test") == "%test%"
     assert NFUZZ("test") == "test"
+
+
+def test_journal_search_validates():
+    """It should fail if an invalid GUID is passed in"""
+    logger = logging.getLogger("test_logger")
+    config = CcureConfig()
+    conn = CcureConnection(logger=logger, config=config)
+    now = datetime.now()
+    the_past = now - timedelta(days=1000)
+    with pytest.raises(ACSRequestException):
+        CcureJournal(conn).search(the_past, now, "door", "this-isnt-a-validguid")

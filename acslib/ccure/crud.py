@@ -510,7 +510,7 @@ class CcureJournal(CcureACS):
             ),
             timeout=timeout,
         )
-        return response.json[1:]
+        return response.json[1:]  # the first item is just metadata
 
     def count(
         self,
