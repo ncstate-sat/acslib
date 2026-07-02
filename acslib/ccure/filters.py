@@ -105,9 +105,7 @@ class PersonnelFilter(CcureFilter):
         fields = [(field_name, lookup(term)) for field_name, lookup in self.filter_fields.items()]
         field_queries, field_args = [], []
         for field_name, lookup in fields:
-            field_queries.append(
-                f"{field_name} {self.term_operator} ?"
-            )
+            field_queries.append(f"{field_name} {self.term_operator} ?")
             field_args.append(lookup)
         return f"({self.inner_bool.join(field_queries)})", field_args
 
