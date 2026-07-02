@@ -2,7 +2,7 @@ from typing import Optional, Any
 
 from acslib.base import AccessControlSystem, ACSRequestData, ACSRequestResponse, ACSRequestException
 from acslib.ccure.connection import CcureConnection, ACSRequestMethod
-from acslib.ccure.filters import CcureFilter, NFUZZ
+from acslib.ccure.filters import CcureFilter, NFUZZ, PersonnelFilter
 
 
 class CcureACS(AccessControlSystem):
@@ -65,6 +65,48 @@ class CcureACS(AccessControlSystem):
             timeout=timeout,
         )
         return response.json
+
+    def search_personnel(
+        self,
+        search_filter: PersonnelFilter,
+        sort_column: str,
+        terms: Optional[list] = None,
+        page_size: Optional[int] = None,
+        page_number: int = 1,
+        timeout: float = 0,
+        search_options: Optional[dict] = None,
+        where_clause: Optional[str] = None,
+        where_arg_list: Optional[list[str]] = None,
+    ) -> list[dict]:
+        """
+        Personnel requires a separate endpoint to support searching with special characters
+        """
+        if search_filter is None and not where_clause:
+            raise ACSRequestException(400, "A search filter or where clause is required.")
+        if page_size is None:
+            page_size = self.config.page_size
+        if not where_clause or not where_arg_list:
+            where_clause, where_arg_list = search_filter.filter(terms or [])
+        request_json = {
+            "pageSize": page_size,
+            "pageNumber": page_number,
+            "propertyList": search_filter.display_properties,
+            "explicitPropertyList": search_filter.explicit_property_list,
+            "sortColumnName": sort_column,
+            "whereClause": where_clause,
+            "whereArgList": where_arg_list,
+        } | (search_options or {})
+        response = self.connection.request(
+            ACSRequestMethod.POST,
+            request_data=ACSRequestData(
+                url=self.connection.config.base_url
+                + self.connection.config.endpoints.PERSONNEL_SEARCH,
+                request_json=request_json,
+                headers=self.connection.base_headers,
+            ),
+            timeout=timeout,
+        )
+        return response.json[1:]
 
     def get_property(self, object_type: str, object_id: int, property_name: str) -> Any:
         """Return the value of one property from one CCure object"""

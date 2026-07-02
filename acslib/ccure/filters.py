@@ -96,8 +96,30 @@ class PersonnelFilter(CcureFilter):
         self.inner_bool = f" {inner_bool.value} "
         self.term_operator = term_operator.value
         self.display_properties = ["FirstName", "MiddleName", "LastName", "ObjectID"]
+        self.explicit_property_list = []
         if display_properties is not None:
             self.display_properties = display_properties
+
+    def _compile_term(self, term) -> tuple[str, list[str]]:
+        """Get all parts of the query for one search term"""
+        fields = [(field_name, lookup(term)) for field_name, lookup in self.filter_fields.items()]
+        field_queries, field_args = [], []
+        for field_name, lookup in fields:
+            field_queries.append(
+                f"{field_name} {self.term_operator} ?"
+            )
+            field_args.append(lookup)
+        return f"({self.inner_bool.join(field_queries)})", field_args
+
+    def filter(self, search: list[str]) -> tuple[str, list[str]]:
+        if not isinstance(search, list):
+            raise TypeError("Search must be a list of strings")
+        compiled_terms = [self._compile_term(term) for term in search]
+        query_string = self.outer_bool.join(compiled_term[0] for compiled_term in compiled_terms)
+        query_args = []
+        for compiled_term in compiled_terms:
+            query_args.extend(compiled_term[1])
+        return query_string, query_args
 
 
 class ClearanceFilter(CcureFilter):

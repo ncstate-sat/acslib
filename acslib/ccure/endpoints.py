@@ -4,6 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class V2Endpoints:
     FIND_OBJS_W_CRITERIA = "/victorwebservice/api/Objects/FindObjsWithCriteriaFilter"
+    PERSONNEL_SEARCH = "/victorwebservice/api/v2/Personnel/PageCollection"
     PERSIST_TO_CONTAINER = "/victorwebservice/api/Objects/PersistToContainer"
     REMOVE_FROM_CONTAINER = "/victorwebservice/api/Objects/RemoveFromContainer"
     JOURNALS = "/victorWebService/api/v2/Journal/FindInJournal"
