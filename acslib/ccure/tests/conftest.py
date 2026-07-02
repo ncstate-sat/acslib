@@ -79,3 +79,9 @@ def response_w_session(base_mock_response):
 def personnel_response(response_w_session):
     response_w_session._json = {"FirstName": "Test", "MiddleName": "Ng", "LastName": "Stuff"}
     return response_w_session
+
+
+@pytest.fixture
+def clearance_response(response_w_session):
+    response_w_session._json = {"Name": "TestClearance", "ObjectID": 4000}
+    return response_w_session
