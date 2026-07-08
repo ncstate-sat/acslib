@@ -31,9 +31,9 @@ class CcurePersonnel(CcureACS):
 
     def search(
         self,
+        terms: Optional[list] = None,
         search_filter: Optional[PersonnelFilter] = None,
         sort_column: str = "LastName",
-        terms: Optional[list] = None,
         page_size: Optional[int] = None,
         page_number: int = 1,
         timeout: float = 0,
