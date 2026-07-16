@@ -33,30 +33,33 @@ class CcurePersonnel(CcureACS):
         self,
         terms: Optional[list] = None,
         search_filter: Optional[PersonnelFilter] = None,
+        sort_column: str = "LastName",
         page_size: Optional[int] = None,
         page_number: int = 1,
         timeout: float = 0,
         search_options: Optional[dict] = None,
         where_clause: Optional[str] = None,
+        where_arg_list: Optional[list[str]] = None,
     ) -> list:
         """
         Get a list of Personnel objects matching given search terms
 
         :param terms: list of search terms
-        :param search filter: specifies how and in what fields to look for the search terms
+        :param search_filter: specifies how and in what fields to look for the search terms
         """
         self.logger.info("Searching for personnel")
         search_filter = search_filter or self.search_filter
 
-        return super().search(
-            object_type=self.type,
-            search_filter=search_filter,
+        return super().search_personnel(
             terms=terms,
+            search_filter=search_filter,
+            sort_column=sort_column,
             page_size=page_size,
             page_number=page_number,
             timeout=timeout,
             search_options=search_options,
             where_clause=where_clause,
+            where_arg_list=where_arg_list,
         )
 
     def get_property(self, object_id: int, property_name: str) -> Any:

@@ -54,9 +54,16 @@ def test_custom_instance():
 
 
 def test_single_search_term():
-    filter = PersonnelFilter()
+    filter = ClearanceFilter()
     search = filter.filter(["test"])
-    assert search == "(FirstName LIKE '%test%' OR LastName LIKE '%test%')"
+    assert search == "(Name LIKE '%test%')"
+
+
+def test_single_search_term_personnel():
+    filter = PersonnelFilter()
+    query_string, query_args = filter.filter(["test"])
+    assert query_string == "(FirstName LIKE ? OR LastName LIKE ?)"
+    assert query_args == ["%test%", "%test%"]
 
 
 def test_single_search_term_not_list():
@@ -66,12 +73,18 @@ def test_single_search_term_not_list():
 
 
 def test_multiple_terms():
+    filter = ClearanceFilter()
+    search = filter.filter(["test"])
+    assert search == "(Name LIKE '%test%')"
+
+
+def test_multiple_terms_personnel():
     filter = PersonnelFilter()
-    search = filter.filter(["test", "test2"])
-    assert search == (
-        "(FirstName LIKE '%test%' OR LastName LIKE '%test%') AND "
-        "(FirstName LIKE '%test2%' OR LastName LIKE '%test2%')"
+    query_string, query_args = filter.filter(["test", "test2"])
+    assert query_string == (
+        "(FirstName LIKE ? OR LastName LIKE ?) AND (FirstName LIKE ? OR LastName LIKE ?)"
     )
+    assert query_args == ["%test%", "%test%", "%test2%", "%test2%"]
 
 
 def test_update_display_properties():
