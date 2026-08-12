@@ -81,12 +81,18 @@ class CcureACS(AccessControlSystem):
         """
         Personnel requires a separate endpoint to support searching with special characters
         """
-        if search_filter is None and not where_clause:
+        is_valid_search = search_filter and terms or where_clause and where_arg_list
+        if search_filter is None and not (where_clause and where_arg_list):
             raise ACSRequestException(400, "A search filter or where clause is required.")
+        if not terms and not (where_clause and where_arg_list):
+            raise ACSRequestException(
+                400,
+                "where_clause and where_arg_list are required if search terms are not included.",
+            )
+        if not is_valid_search:
+            where_clause, where_arg_list = search_filter.filter(terms or [])
         if page_size is None:
             page_size = self.config.page_size
-        if not where_clause or not where_arg_list:
-            where_clause, where_arg_list = search_filter.filter(terms or [])
         request_json = {
             "pageSize": page_size,
             "pageNumber": page_number,
