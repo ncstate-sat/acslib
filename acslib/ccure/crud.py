@@ -46,6 +46,11 @@ class CcurePersonnel(CcureACS):
 
         :param terms: list of search terms
         :param search_filter: specifies how and in what fields to look for the search terms
+        :param where_clause: SQL-style where clause with values replaced with ?
+          - eg. "WHERE FirstName = ? and LastName LIKE ?"
+          - Values must be provided in the `where_arg_list` argument
+        :param where_arg_list: list of values to insert in the `where_clause` string
+          - Values must be listed in order
         """
         self.logger.info("Searching for personnel")
         search_filter = search_filter or self.search_filter

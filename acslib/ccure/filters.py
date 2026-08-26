@@ -109,10 +109,10 @@ class PersonnelFilter(CcureFilter):
             field_args.append(lookup)
         return f"({self.inner_bool.join(field_queries)})", field_args
 
-    def filter(self, search: list[str]) -> tuple[str, list[str]]:
-        if not isinstance(search, list):
-            raise TypeError("Search must be a list of strings")
-        compiled_terms = [self._compile_term(term) for term in search]
+    def filter(self, terms: list[str]) -> tuple[str, list[str]]:
+        if not isinstance(terms, list):
+            raise TypeError("terms must be a list of strings")
+        compiled_terms = [self._compile_term(term) for term in terms]
         query_string = self.outer_bool.join(compiled_term[0] for compiled_term in compiled_terms)
         query_args = []
         for compiled_term in compiled_terms:
