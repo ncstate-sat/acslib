@@ -4,8 +4,6 @@
 #
 #    pip-compile --extra=dev --output-file=requirements/dev/dev.txt pyproject.toml
 #
---extra-index-url https://pypi.ehps.ncsu.edu/
-
 annotated-types==0.6.0
     # via pydantic
 attrs==23.1.0
