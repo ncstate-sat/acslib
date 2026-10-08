@@ -81,7 +81,9 @@ class CcureACS(AccessControlSystem):
         """
         Personnel requires a separate endpoint to support searching with special characters
         """
-        is_valid_search = (terms is not None) or (where_clause and where_arg_list)
+        is_valid_search = (terms is not None) or (
+            where_clause is not None and where_arg_list is not None
+        )
         if not is_valid_search:
             raise ACSRequestException(
                 400,
